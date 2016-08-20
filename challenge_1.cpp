@@ -35,8 +35,9 @@ namespace crypto {
 		const size_t array_length = 2;
 		std::string base64_string;
 
-        // 4 bytes / 6 bytes reduces to 2 / 3
-		base64_string.reserve((hex_string.length() * 2) / 3);
+        // 4 bits / 6 bits reduces to 2 / 3
+        // TODO check if reserve takes bits or bytes
+		base64_string.reserve(((hex_string.length() * 2) / 3) / 8);
         
 		auto valid_words = 1;
 
