@@ -25,11 +25,11 @@ namespace crypto {
 		}
 
 		else {
-			throw std::invalid_argument("Received a character that is not a valid hexadecimal unsigned char")
+			throw std::invalid_argument("Received a character that is not a valid hexadecimal unsigned char");
 		}
 	}
 
-	std::string hex_to_base64(std::string hex_string) {
+	std::string hex_to_base64(const std::string &hex_string) {
 		const std::string base64_cipher =
 			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 		const size_t array_length = 2;
@@ -67,7 +67,7 @@ namespace crypto {
 			// and shifting as necessary
 			for (int n = (valid_words * 4 > 6) ? 2 : 1; n > 0; n--) {
                 base64_string.push_back(base64_cipher
-				.at(hex_word_b >> (6 * (n - 1)) & 0b111111;));
+				.at(hex_word_b >> (6 * (n - 1)) & 0b111111));
 			}
         }
 
