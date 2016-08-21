@@ -4,10 +4,11 @@
 #include <queue>
 #include <stdexcept>
 
-namespace crypto {
+namespace set_1 {
 	// Converts a hex char to a decimal representation
 	// cast as an unsigned char
-	inline unsigned char hex_to_decimal(unsigned char hex_char) {
+    // HELPER FUNCTION
+	inline unsigned char hex_decode(unsigned char hex_char) {
 		// Getting the index of the character offset
 		// WARNING: the character ranges may NOT be consecutive
 		// depending on the encoding used (should work in
@@ -25,10 +26,28 @@ namespace crypto {
 		}
 
 		else {
-			throw std::invalid_argument("Received a character that is not a valid hexadecimal unsigned char");
+			throw std::invalid_argument("Received a character that is not a valid hexadecimal unsigned char.");
 		}
 	}
 
+    // Converts a number to its hexadecimal character representation
+    inline unsigned char hex_encode(unsigned char dec_char) {
+        if (0x0 <= dec_char && dec_char <= 0x9) {
+            return '0' + dec_char;
+        }
+
+        else if (0xA <= dec_char && dec_char <= 0xF) {
+            return 'a' + (dec_char - 0xA);
+        }
+
+        else {
+            throw std::invalid_argument("Received a number that is not between 0 and 16.");
+        }
+    }
+
+    // Converts a string of hexadecimal encoded characters to
+    // a string of base 64 encoded characters 
+    // CHALLENGE 1
 	std::string hex_to_base64(const std::string &hex_string) {
 		const std::string base64_cipher =
 			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
@@ -36,8 +55,8 @@ namespace crypto {
 		std::string base64_string;
 
         // 4 bits / 6 bits reduces to 2 / 3
-        // TODO check if reserve takes bits or bytes
-		base64_string.reserve(((hex_string.length() * 2) / 3) / 8);
+        // (reserves space for # of characters)
+		base64_string.reserve((hex_string.length() * 2) / 3);
         
 		auto valid_words = 1;
 
@@ -47,19 +66,19 @@ namespace crypto {
 		// of a hex word), and 6 (size of a base64 word)
 		for (int i = 0; i < hex_string.length(); i += 3) {
 			int hex_word_b =
-				crypto::hex_to_decimal(hex_string.at(i)) << 8;
+				set_1::hex_decode(hex_string.at(i)) << 8;
 
 			// Checking to see if there are any words afterwards,
 			// if not, then pad with ='s
 			if (i + 1 < hex_string.length()) {
 				hex_word_b +=
-					crypto::hex_to_decimal(hex_string.at(i + 1)) << 4;
+					set_1::hex_decode(hex_string.at(i + 1)) << 4;
 				valid_words += 1;
 			}
 
 			if (i + 2 < hex_string.length()) {
 				hex_word_b +=
-					crypto::hex_to_decimal(hex_string.at(i + 2));
+					set_1::hex_decode(hex_string.at(i + 2));
 				valid_words += 1;
 			}
             
@@ -79,11 +98,79 @@ namespace crypto {
         }
 		return base64_string;
 	}
+
+    // A function that takes two hexadecimal encoded strings
+    // of equal length and returns their XOR combination
+    // CHALLENGE 2
+    std::string hex_xor_op(const std::string &hex_string_1, const std::string &hex_string_2) {
+       if (hex_string_1.length() != hex_string_2.length()) {
+           throw std::invalid_argument("The string buffers must be the same length.");
+       }
+
+       else {
+           std::string xor_result_string;
+           xor_result_string.reserve(hex_string_1.length());
+           
+           // Iterating through both strings and getting xor combination of their chars
+           // then converting char back to hex encoding and pushing to result string
+           for (int i = 0; i < hex_string_1.length(); i++) {
+               auto hex_1_char = set_1::hex_decode(hex_string_1.at(i));
+               auto hex_2_char = set_1::hex_decode(hex_string_2.at(i));
+               unsigned char resultant_char = hex_1_char ^ hex_2_char;
+               xor_result_string.push_back(set_1::hex_encode(resultant_char));
+           }
+           return xor_result_string;
+       }
+    }
+
+    // Takes a hex encoded string that has been XOR'd against a single char,
+    // finds the key, then returns the decrypted message
+    // CHALLENGE 3
+    std::string single_xor_decrypt(const std::string &xor_encoded_string) {
+        // The 12 most used characters in the English language
+        // - used to score the decoded text
+        const std::string scoring_key = "ETAOINSHRLDU";
+        
+        unsigned char current_max_key = 0x0;
+        int current_max_score = 0;
+
+        // testing each hex character, decoding, then scoring
+        // resultant output string against scoring key
+        for (unsigned char i = 0x0; i <= 0xf; i++) {
+            // XOR'ing the string against a hex character
+            std::string testing_string = set_1::hex_xor_op(xor_encoded_string, set_1::hex_encode(i));
+            std::string decoded_text_string;
+            decoded_text_string.reserve(testing_string.length() / 2);
+
+            // Converting the resultant string to normal chars
+            // by combining two 4-bit hex chars into 1 8 bit char
+            for (int n = 0; n < testing_string.length(); n+=2) {
+                unsigned char hex_to_char = testing_string.at(n) << 4;
+
+                if (n + 1 < testing_string.length()) {
+                    hex_to_char |= testing_string.at(n + 1);
+                }
+
+                decoded_text_string.push_back(hex_to_char);
+            }
+
+            // Getting score for this XOR'd string
+            // TODO: find instances of each letter for string, add to score
+            // TODO: then get key for max score, then decode and return decoded string
+
+        }
+    }
 }
 
 using namespace std;
 int main() {
-	cout << crypto::hex_to_base64("12") << "\n";
-    // Correct hex conversion is: ""
+    cout << "0 indicates a successful test. Any other number indicates failure." << "\n\n";
+    // Test cases:
+    cout << "Challenge 1: " << set_1::hex_to_base64("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d")
+	.compare("SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t") << "\n";
+    cout << "Challenge 2: " << (set_1::hex_xor_op("1c0111001f010100061a024b53535009181c", 
+	"686974207468652062756c6c277320657965").compare("746865206b696420646f6e277420706c6179"))<< "\n";
+
+    cout << "\n";
 	return 0;
 }
