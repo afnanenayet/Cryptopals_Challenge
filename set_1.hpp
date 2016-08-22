@@ -1,6 +1,8 @@
 #include <string>
 #include <iostream>
 #include <stdexcept>
+#include <algorithm>
+#include <climits>
 
 namespace set_1 {
     // Converts a hex char to a decimal representation
@@ -25,10 +27,19 @@ namespace set_1 {
     // CHALLENGE 2
     std::string hex_xor_op(const std::string &, const std::string &);
 
+    // Takes a string and performs a xor operation against each character
+    // using the char key provided and returns the resultant string
+    // NOTE: this does not respect any encodings - it just performs
+    // the operation on each raw char
+    std::string xor_op_sk(const std::string &, unsigned char);
+
     // Takes a hex encoded string that has been XOR'd against a single char,
     // finds the key, then returns the decrypted message
     // CHALLENGE 3
     std::string single_xor_decrypt(const std::string &);
+
+    // Converts a hex encoded string to a standard ASCII encoded string
+    inline std::string hex_to_text(std::string hex_string);
 
     // Runs all test cases and prints results to console
     // Prints 0 for each successful test case
