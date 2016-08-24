@@ -3,6 +3,9 @@
 #include <stdexcept>
 #include <algorithm>
 #include <climits>
+#include <map>
+#include <cmath>
+#include <cctype>
 
 namespace set_1 {
     // Converts a hex char to a decimal representation
@@ -44,4 +47,8 @@ namespace set_1 {
     // Runs all test cases and prints results to console
     // Prints 0 for each successful test case
     void test_cases();
+
+    // Analyzes a string and returns a number corresponding
+    // to how far off the frequency is in the given string
+    double freqa_ranking(std::string);
 }

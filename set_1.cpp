@@ -1,5 +1,6 @@
 #include "set_1.hpp"
 
+using std::cout;
 namespace set_1 {
     // Decodes hex to 4 bit binary then combines two hex
     // characters to 1 8 bit ASCII character
@@ -149,13 +150,12 @@ namespace set_1 {
         return xor_result_string;
     }
 
+    // Iterating through each possible char value, decoding the hex string
+    // then xor'ing it against the key. Looking for best possible match via
+    // frequency analysis
     std::string single_xor_decrypt(const std::string &xor_encoded_string) {
-        // The 12 most used characters in the English language
-        // - used to score the decoded text
-        const std::string scoring_key = "etaoinshrldu";
-        
-        unsigned char current_max_key = 0x0;
-        int current_max_score = 0;
+        unsigned char current_min_key = 0x0;
+        double current_min_score = std::numeric_limits<double>::max();
 
         // testing each hex character, decoding, then scoring
         // resultant output string against scoring key
@@ -163,30 +163,65 @@ namespace set_1 {
             // XOR'ing the string against a hex character
             std::string testing_string = xor_op_sk(hex_to_text(xor_encoded_string), i);
 
-            int current_score = 0;
-            // Getting score for this XOR'd string through frequency analysis
-            for (auto letter : scoring_key) {
-                std::transform(testing_string.begin(), testing_string.end(),
-                testing_string.begin(), ::tolower);
+            double alpha_score = 0;
+            double freqa_score = freqa_ranking(testing_string);
 
-                current_score += static_cast<int>(std::count(testing_string.begin(),
-                            testing_string.end(), letter));
+            // Getting ratio of characters that are alphabetical
+            for (char letter : testing_string) {
+                if (std::isalpha(letter) != 0) {
+                    alpha_score++;
+                }
             }
 
-            // Updating max's if necessary
-            if (current_score > current_max_score) {
-                current_max_score = current_score;
-                current_max_key = i;
+            // Ignoring spaces in the alphabetical ranking
+            alpha_score /= testing_string.length() - std::count(testing_string.begin(), testing_string.end(), ' ');
+            auto current_score = (freqa_score * .6) - (alpha_score * .4);
 
-                std::cout << current_max_key << " " << current_score << "\n";
+            // Updating max/min if necessary
+            if (current_score < current_min_score) {
+                current_min_score = current_score;
+                current_min_key = i;
             }
         }
 
         // Returning the decoded text from the encoded string using
         // the key ascertained above
-        return xor_op_sk(hex_to_text(xor_encoded_string), current_max_key);
+        return xor_op_sk(hex_to_text(xor_encoded_string), current_min_key);
     }
     
+    // Takes the string, analyzes the distribution of letters in the string
+    // Compares those letters to the frequency of the most popular letters in 
+    // the English language, then uses the distance formula to calculate how far off
+    // the string is from average English
+    double freqa_ranking(std::string english_string) {
+        // Converting all the letters to lower case
+        std::transform(english_string.begin(), english_string.end(), english_string.begin(),
+                ::tolower);
+
+        // The distribution of the top 12 letters in the English language
+        const std::map<char, double> english_fr_dist = {{'e', .12702}, {'t', .09056}, 
+            {'a', .08167}, {'o', .07507}, {'i', .06966}, {'n', .06749}, {'s', .06327}, 
+                            {'h', .06094}, {'r', .05987}, {'l', .04025}, {'d', .04253}, {'u', .02759}};
+
+        // Error from normal distribution for given letters in the string
+        std::map<char, double> string_fr_dist;
+
+        // Sum of the squares of the differences for the distance formula
+        double radicand = 0;
+
+        // Looping through each key in the english_fr_dist map and getting ratio
+        // of each character in the given string and adding to the radicand
+        for (auto& map_elem : english_fr_dist) {
+            // observed ratio of letters in string
+            double ratio = (static_cast<double>(std::count(english_string.begin(), english_string.end(),
+                        map_elem.first))) / (static_cast<double>(english_string.length()));
+
+            radicand += pow((ratio - map_elem.second), 2);
+        }
+
+        return sqrt(radicand);
+    }
+
     void test_cases() {
         // Output of 0 indicates successful test case. Any other number indicates failure.
         // There are some exceptions where success is indicated by the output of
