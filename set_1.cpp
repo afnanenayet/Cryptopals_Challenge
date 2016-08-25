@@ -162,19 +162,8 @@ namespace set_1 {
         for (unsigned char i = 0; i < UCHAR_MAX; i++) {
             // XOR'ing the string against a hex character
             std::string testing_string = xor_op_sk(hex_to_text(xor_encoded_string), i);
-
-            double alpha_score = 0;
+            double alpha_score = alpha_ranking(testing_string);
             double freqa_score = freqa_ranking(testing_string);
-
-            // Getting ratio of characters that are alphabetical
-            for (char letter : testing_string) {
-                if (std::isalpha(letter) != 0) {
-                    alpha_score++;
-                }
-            }
-
-            // Ignoring spaces in the alphabetical ranking
-            alpha_score /= testing_string.length() - std::count(testing_string.begin(), testing_string.end(), ' ');
             auto current_score = (freqa_score * .6) - (alpha_score * .4);
 
             // Updating max/min if necessary
@@ -222,10 +211,59 @@ namespace set_1 {
         return sqrt(radicand);
     }
 
+    double alpha_ranking(const std::string & alpha_string) {
+        double alpha_score = 0;
+        // Getting ratio of characters that are alphabetical
+        for (char letter : alpha_string) {
+             if (std::isalpha(letter) != 0) {
+                 alpha_score++;
+             }
+        }
+
+         // Ignoring spaces in the alphabetical ranking
+         alpha_score /= alpha_string.length() 
+             - std::count(alpha_string.begin(), alpha_string.end(), ' ');
+         return alpha_score;
+    }
+
+    // Iterates through each line in the given file, then computes
+    // the most likely decoded string for each hex encoded string
+    // and finally returns the most likely comprehensible English
+    // string of all the decoded strings
+    std::string detect_schar_xor(const std::string &file_name) {
+        std::ifstream string_file(file_name, std::ios_base::in);
+        std::string curr_line;
+        
+        // The string that is most likely to be the xor decrypted string
+        // based on frequency and alphabetical analysis
+        std::string curr_top_line;
+
+        double current_min_score = std::numeric_limits<double>::max();
+
+        // Looping through each line in the file
+        while (string_file >> curr_line) {
+            // Getting line, then running a frequency analysis
+            // then finding what prop. is alphabetical
+            // then computing a score (lower is better)
+            auto curr_decoded_str = single_xor_decrypt(curr_line);
+            auto freqa_score = freqa_ranking(curr_decoded_str);
+            auto alpha_score = alpha_ranking(curr_decoded_str);
+            double current_score = (freqa_score * .6) - (alpha_score * .4);
+
+            if (current_score < current_min_score) {
+                current_min_score = current_score;
+                curr_top_line = curr_decoded_str;
+            }
+        }
+        return curr_top_line;
+    }
+
     void test_cases() {
         // Output of 0 indicates successful test case. Any other number indicates failure.
         // There are some exceptions where success is indicated by the output of
         // something that isn't gibberish.
+
+        std::cout << "\nSet 1 test cases:\n";
         
         // BEGIN TEST CASES
         std::cout << "Challenge 1: " << hex_to_base64("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d")
@@ -234,7 +272,8 @@ namespace set_1 {
                                                            "686974207468652062756c6c277320657965")
                                          .compare("746865206b696420646f6e277420706c6179"))<< "\n";
         
-        std::cout << "Challenge 3: " << single_xor_decrypt("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736");
+        std::cout << "Challenge 3: " << single_xor_decrypt("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736") << "\n";
+        std::cout << "Challenge 4: " << detect_schar_xor("xor_strings.txt") << "\n";
         // END TEST CASES
         std::cout << "\n";
     }
