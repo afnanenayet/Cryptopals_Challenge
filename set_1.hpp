@@ -52,7 +52,7 @@ namespace set_1 {
 
     // Converts a hex encoded string to a standard ASCII encoded string
     // @param a hex encoded string
-    inline std::string hex_to_text(std::string);
+    inline std::string hex_to_text(const std::string &);
 
     // Runs all test cases and prints results to console
     // Prints 0 for each successful test case
@@ -72,5 +72,18 @@ namespace set_1 {
     // that has been detected to be using a single character XOR
     // cipher
     // @param a string with the filename that contains the strings
+    // CHALLENGE 4
     std::string detect_schar_xor(const std::string &);
+
+    // Encrypts a string against a multi-character key
+    // and returns the encrypted result as a 
+    // hex encoded string
+    // @param a key string
+    // @param a message to be encoded (plaintext)
+    std::string rep_xor_encrypt(const std::string &, const std::string &);
+
+    // Decrypts a hex encoded string encrypted with a repeating XOR key
+    // and returns the decrypted result as a string
+    // @param the file name of the stored hex string
+    std::string rep_xor_decrypt(const std::string &);
 }

@@ -2,9 +2,8 @@
 
 using std::cout;
 namespace set_1 {
-    // Decodes hex to 4 bit binary then combines two hex
-    // characters to 1 8 bit ASCII character
-    inline std::string hex_to_text(std::string hex_string) {
+    // Combines two hex characters to an 8 bit ASCII character
+    inline std::string hex_to_text(const std::string &hex_string) {
         std::string decoded_text_string;
         
         // A char is 8 bits, a hex character takes 4 bits
@@ -12,17 +11,18 @@ namespace set_1 {
         // ASCII char
         decoded_text_string.reserve(hex_string.length() / 2);
 
-            // Converting the resultant string to normal chars
-            // by combining two 4-bit hex chars into 1 8 bit char
-            for (int n = 0; n < hex_string.length(); n+=2) {
-                unsigned char hex_to_char = (hex_string.at(n) << 4) & 0b11110000;
+        // Converting the resultant string to normal chars
+        // by combining two 4-bit hex chars into 1 8 bit char
+        for (int n = 0; n < hex_string.length(); n+=2) {
+            unsigned char hex_to_char = (hex_string.at(n) << 4) & 0b11110000;
 
-                if (n + 1 < hex_string.length()) {
-                    hex_to_char |= (set_1::hex_decode(hex_string.at(n + 1)) & 0b1111);
-                }
-                decoded_text_string.push_back(hex_to_char);
-            } 
-            return decoded_text_string;
+            if (n + 1 < hex_string.length()) {
+                hex_to_char |= (set_1::hex_decode(hex_string.at(n + 1)) & 0b1111);
+            }
+            decoded_text_string.push_back(hex_to_char);
+        } 
+    
+        return decoded_text_string;
     }
 
 	inline unsigned char hex_decode(unsigned char hex_char) {
@@ -47,6 +47,10 @@ namespace set_1 {
 		}
 	}
 
+    // Getting index offsets for each hex character
+    // WARNING: this function only works if the encoding
+    // places chars '0' - '9' and 'a' - 'f' adjacent to
+    // each other in the encoding
     inline unsigned char hex_encode(unsigned char dec_char) {
         if (0x0 <= dec_char && dec_char <= 0x9) {
             return '0' + dec_char;
@@ -109,6 +113,7 @@ namespace set_1 {
         for (int i = 0; i < ((hex_string.length() * 4) / 8) % 3; i++) {
             base64_string.push_back('=');
         }
+
 		return base64_string;
 	}
 
@@ -132,6 +137,7 @@ namespace set_1 {
                unsigned char resultant_char = hex_1_char ^ hex_2_char;
                xor_result_string.push_back(hex_encode(resultant_char));
            }
+
            return xor_result_string;
        }
     }
@@ -147,6 +153,7 @@ namespace set_1 {
             unsigned char resultant_char = letter ^ xor_key;
             xor_result_string.push_back(resultant_char);
         }
+
         return xor_result_string;
     }
 
@@ -183,7 +190,7 @@ namespace set_1 {
     // the English language, then uses the distance formula to calculate how far off
     // the string is from average English
     double freqa_ranking(std::string english_string) {
-        // Converting all the letters to lower case
+        // Converting all the letters to lower case for the comparison
         std::transform(english_string.begin(), english_string.end(), english_string.begin(),
                 ::tolower);
 
@@ -255,17 +262,42 @@ namespace set_1 {
                 curr_top_line = curr_decoded_str;
             }
         }
+
         return curr_top_line;
     }
 
-    void test_cases() {
-        // Output of 0 indicates successful test case. Any other number indicates failure.
-        // There are some exceptions where success is indicated by the output of
-        // something that isn't gibberish.
+    // XOR's a string against each character of a key, using modulus arithmetic
+    // to cycle through the key and some bit shifting to split a plaintext character
+    // into two hex characters
+    std::string rep_xor_encrypt(const std::string &key, const std::string &message) {
+        std::string encrypted_message;
+        encrypted_message.reserve(message.length() * 2);
 
-        std::cout << "\nSet 1 test cases:\n";
+        // Performing a XOR op for every character in the message string
+        for (int i = 0; i < message.length(); i++) {
+            // Splitting a xor'd char into two hex chars
+            unsigned char xor_char = message.at(i) ^ (key.at(i % key.length()));
+            unsigned char hex_1 = (0b11110000 & xor_char) >> 4;
+            unsigned char hex_2 = 0b1111 & xor_char;
+
+            encrypted_message.push_back(hex_encode(hex_1));
+            encrypted_message.push_back(hex_encode(hex_2));
+        }
+
+        return encrypted_message;
+    }
+
+    std::string rep_xor_decrypt(const std::string &file_name) {
+    }
+
+    // Output of 0 indicates successful test case. Any other number indicates failure.
+    // There are some exceptions where success is indicated by the output of
+    // Vanilla Ice lyrics
+    void test_cases() {
+        std::cout << "\nSet 1 test cases:\n\n";
         
         // BEGIN TEST CASES
+
         std::cout << "Challenge 1: " << hex_to_base64("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d")
         .compare("SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t") << "\n";
         std::cout << "Challenge 2: " << (hex_xor_op("1c0111001f010100061a024b53535009181c",
@@ -273,9 +305,10 @@ namespace set_1 {
                                          .compare("746865206b696420646f6e277420706c6179"))<< "\n";
         
         std::cout << "Challenge 3: " << single_xor_decrypt("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736") << "\n";
-        std::cout << "Challenge 4: " << detect_schar_xor("xor_strings.txt") << "\n";
+        std::cout << "Challenge 4: " << detect_schar_xor("xor_strings.txt");
+        std::cout << "Challenge 5: " << rep_xor_encrypt("ICE", "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal").compare("0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f") << "\n";
+
         // END TEST CASES
         std::cout << "\n";
     }
 }
-
