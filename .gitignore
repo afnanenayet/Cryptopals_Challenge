@@ -37,3 +37,9 @@ cmake_install.cmake
 install_manifest.txt
 CTestTestfile.cmake
 build/
+cmake-build-debug/
+txt/
+*.cbp
+*.cbp*
+tags
+challenge_solutions/

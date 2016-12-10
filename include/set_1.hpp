@@ -15,7 +15,6 @@
 #include <numeric>
 #include <sstream>
 #include <tuple>
-#include <b64/decode.hpp>
 
 namespace set_1 {
 const std::string base64_cipher =
