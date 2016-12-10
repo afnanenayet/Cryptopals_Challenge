@@ -1,6 +1,7 @@
 #include "set_1.hpp"
 
 using std::cout;
+
 namespace set_1 {
 // Combines two hex characters to an 8 bit ASCII character
 inline std::string hex_to_text(const std::string &hex_string) {
@@ -32,17 +33,11 @@ inline unsigned char hex_decode(unsigned char hex_char) {
   // UTF-8 and ASCII)
   if ('0' <= hex_char && hex_char <= '9') {
     return (hex_char - '0');
-  }
-
-  else if ('A' <= hex_char && hex_char <= 'F') {
+  } else if ('A' <= hex_char && hex_char <= 'F') {
     return (hex_char - 'A') + 0xA;
-  }
-
-  else if ('a' <= hex_char && hex_char <= 'f') {
+  } else if ('a' <= hex_char && hex_char <= 'f') {
     return (hex_char - 'a') + 0xA;
-  }
-
-  else {
+  } else {
     throw std::invalid_argument(
         "Received a character that is not a valid hexadecimal unsigned char.");
   }
@@ -55,13 +50,9 @@ inline unsigned char hex_decode(unsigned char hex_char) {
 inline unsigned char hex_encode(unsigned char dec_char) {
   if (0x0 <= dec_char && dec_char <= 0x9) {
     return '0' + dec_char;
-  }
-
-  else if (0xA <= dec_char && dec_char <= 0xF) {
+  } else if (0xA <= dec_char && dec_char <= 0xF) {
     return 'a' + (dec_char - 0xA);
-  }
-
-  else {
+  } else {
     throw std::invalid_argument(
         "Received a number that is not between 0 and 16.");
   }
@@ -135,9 +126,7 @@ std::string hex_xor_op(const std::string &hex_string_1,
                        const std::string &hex_string_2) {
   if (hex_string_1.length() != hex_string_2.length()) {
     throw std::invalid_argument("The string buffers must be the same length.");
-  }
-
-  else {
+  } else {
     std::string xor_result_string;
     xor_result_string.reserve(hex_string_1.length());
 
@@ -208,26 +197,19 @@ unsigned char single_xor_decrypt_key(const std::string &xor_encoded_string) {
   // resultant output string against scoring key
   for (unsigned char i = 0; i < UCHAR_MAX; i++) {
     // XOR'ing the string against a hex character
-    std::string reverse_encoded_str = xor_op_sk(xor_encoded_string, i);
-
-    // TODO REMOVE DEBUG
-    cout << "\nxor encoded string: " << reverse_encoded_str << "\n";
-
-    double alpha_score = alpha_ranking(xor_encoded_string);
-    double freqa_score = freqa_ranking(xor_encoded_string);
+    std::string testing_string = xor_op_sk(xor_encoded_string, i);
+    double alpha_score = alpha_ranking(testing_string);
+    double freqa_score = freqa_ranking(testing_string);
     auto current_score = (freqa_score * .6) - (alpha_score * .4);
 
     // Updating max/min if necessary
     if (current_score < current_min_score) {
-      // TODO REMOVE DEBUG
-      cout << "\nNew score: " << current_score << "\n";
-
       current_min_score = current_score;
       current_min_key = i;
-      cout << "Bitset for key: " << std::bitset<8>(current_min_key) << "\n";
     }
   }
-
+  // Returning the decoded text from the encoded string using
+  // the key ascertained above
   return current_min_key;
 }
 
@@ -334,125 +316,125 @@ std::string rep_xor_encrypt(const std::string &key,
 
 // Iterates through possible key sizes and brute forces combinations
 // until most likely key size is found
-unsigned int xor_key_size_bf(const std::string &xor_encoded_string,
-                             const unsigned int &key_lower_limit,
-                             const unsigned int &key_upper_limit,
-                             const unsigned int &num_pairs) {
+std::vector<unsigned int> xor_key_size_bf(
+    const std::string &xor_encoded_string,
+    const unsigned int key_lower_limit = 1,
+    const unsigned int key_upper_limit = 40, const unsigned int num_chunks = 1,
+    const unsigned int num_candidates = 1) {
+  std::vector<unsigned int> key_sz_scores(num_candidates);
+  std::map<double, unsigned int> candidate_map;
   unsigned int est_key_size = 0;
-  double lowest_edit_dist = 1000;
+  double lowest_edit_dist = std::numeric_limits<double>::max();
 
   // Iterating through difference key sizes and trying to find the most
   // likely key size
   for (auto curr_key_size = key_lower_limit;
        curr_key_size <= key_upper_limit &&
-       curr_key_size * 2 < xor_encoded_string.length();
+       curr_key_size < xor_encoded_string.length();
        curr_key_size++) {
-    std::vector<double> hamming_distances;
-    hamming_distances.reserve(num_pairs);
+    double division_factor = 0;
+    double curr_total = 0;
+    double normalized_ham_dist;
 
-    // Finding edit distance, normalizing by key size, and finding min
-    // to estimate key size
-      double n_hamming_dist = hamming_distance(
-          xor_encoded_string.substr(0, curr_key_size),
-          xor_encoded_string.substr(1 * curr_key_size, curr_key_size));
-      n_hamming_dist /= curr_key_size;
-
-      // Storing the distances in a vector so averages can be computed
-      // for an variable number of pairs/hamming distances
-      hamming_distances.push_back(n_hamming_dist);
+    // if we want multiple chunks to be averaged this loop takes care of
+    // it. NOTE THAT IT TRIES BUT WON'T ENFORCE THE CHUNK AVG (applying
+    // in cases where multiple chunks exceed the sz of the string)
+    while (division_factor < num_chunks &&
+           division_factor * curr_key_size < xor_encoded_string.length()) {
+      // Finding edit distance, normalizing by key size, and finding min
+      // to estimate key size
+      double curr_n_h_d = hamming_distance(
+          xor_encoded_string.substr(curr_key_size * division_factor,
+                                    curr_key_size),
+          xor_encoded_string.substr(curr_key_size * (division_factor + 1),
+                                    curr_key_size));
+      curr_total += curr_n_h_d / curr_key_size;
+      division_factor++;
     }
 
-    // Getting average of hamming distances
-    double avg_ham_dist =
-        std::accumulate(hamming_distances.begin(), hamming_distances.end(), 0) /
-        hamming_distances
-            .size();  // TODO fix floating point error (8)/arithmetic error
-
-    // Setting min
-    if (avg_ham_dist < lowest_edit_dist) {
-      lowest_edit_dist = avg_ham_dist;
-      est_key_size = curr_key_size;
-    }
+    normalized_ham_dist = curr_total / division_factor;
+    candidate_map[normalized_ham_dist] = curr_key_size;
   }
+  std::vector<unsigned int> return_vector;
+  auto iter_index = 0;
 
-  return est_key_size;
+  // getting lowest 3 scores and their corresponding keys
+  for (auto iter = candidate_map.begin();
+       iter_index <= num_candidates && iter != candidate_map.end(); ++iter) {
+    return_vector.push_back(iter->second);
+    iter_index++;
+  }
+  return return_vector;
 }
 
 // TODO: FINISH
 // Challenge 6: Breaking repeating key xor
-std::string rep_xor_decrypt(const std::string &file_name,
-                            const unsigned int key_lower_limit,
-                            const unsigned int key_upper_limit) {
+std::tuple<std::string, std::string> rep_xor_decrypt(
+    const std::string &file_name, const unsigned int key_lower_limit,
+    const unsigned int key_upper_limit) {
   std::ifstream base64_file(file_name, std::ios_base::in);
 
   if (base64_file.is_open()) {
-    std::string est_key;
-    std::stringstream file_buf;
+    std::string file_buf;
+    std::string final_est_key;
+    std::string decoded_string;
+    double validity_ranking = 0;
+    std::string likely_decoded_message;
 
-    // Outputting contents of file to string
-    file_buf << base64_file.rdbuf();
-    auto decoded_string = base64_decode(file_buf.str());
+    // b64_decoder.decode(base64_file, b64_out);
 
-    // Brute-forcing the key size
-    auto key_candidates = xor_key_size_bf(decoded_string, key_lower_limit,
-                                                key_upper_limit, 2);
+    base64_file.seekg(0, std::ios::end);
+    decoded_string.reserve(base64_file.tellg());
+    base64_file.seekg(0, std::ios::beg);
 
-    std::vector<std::string> decrypted_strings;
-    decrypted_strings.reserve(key_candidates.size());
+    decoded_string.assign((std::istreambuf_iterator<char>(base64_file)),
+                          std::istreambuf_iterator<char>());
+    base64_file.close();
+
+    // Brute force guessing the key size
+    auto key_candidates =
+        xor_key_size_bf(decoded_string, key_lower_limit, key_upper_limit,
+                        3,   // num pairs
+                        3);  // num key candidates to return
+
+    std::vector<std::string> decrypted_strings(key_candidates.size());
 
     // Cycling through the potential key size(s)
-    for (auto key_size : key_candidates) {
-      // Reserving space for vectors
-      std::vector<std::string> text_blocks;
+    for (unsigned int key_size : key_candidates) {
+      std::string curr_est_key;
       std::vector<std::string> transposed_text_blocks(key_size);
 
-      // TODO break this off into a loop so multiple key sizes can be tested
-      // Breaking up text into blocks of estimated key size length
-      for (int i = 0; i + key_size < decoded_string.length(); i += key_size) {
-        std::string text_block;
-        text_block.reserve(key_size);
-
-        for (int n = 0; n < key_size; n++) {
-          text_block.push_back(decoded_string.at(n + i));
-        }
-
-        text_blocks.push_back(text_block);
+      // Simple loop to put every ith character in
+      // the ith block
+      for (unsigned int i = 0; i < decoded_string.length(); i++) {
+        transposed_text_blocks.at(i % key_size).push_back(decoded_string.at(i));
       }
 
-      // Transposing text blocks to place matching key chars together
-      // nth char of each block pushed to nth index of the transposed
-      // block vector
-      for (int i = 0; i < text_blocks.size(); i++) {
-        for (int n = 0; n < text_blocks.at(i).length(); n++) {
-          // Pushing back nth element of the block to nth index in
-          // the transposed vector
-          (transposed_text_blocks.at(n)).push_back(text_blocks.at(i).at(n));
-        }
-        cout << "\nText block size: " << text_blocks.at(i).size();
-        cout << "\nTransp text block size: " << transposed_text_blocks.size();
-      }
-
+      // compiling estimated key for this key length
       for (std::string block : transposed_text_blocks) {
         // decrypt each xor encrypted string here;
-        est_key.push_back(single_xor_decrypt_key(block));
+        curr_est_key.push_back(single_xor_decrypt_key(block));
       }
 
-      // TODO REMOVE DEBUG
-      cout << "\nEstimated key length: " << est_key.length() << "\n";
-      cout << "Decoded string: " << decoded_string << "\n";
-      cout << "\nEstimated key: " << est_key << "\n";
+      // cout << "\nEstimated key: " << curr_est_key << "\n";
+      // performing frequency
+      auto curr_decoded_str = rep_xor_encrypt(curr_est_key, decoded_string);
 
-      base64_file.close();
-      decrypted_strings.push_back(rep_xor_encrypt(est_key, decoded_string));
+      // cout << "\ncurr decoded str: " << curr_decoded_str << "\n";
+
+      auto freqa_score = freqa_ranking(curr_decoded_str);
+      auto alpha_score = alpha_ranking(curr_decoded_str);
+      double current_score = (freqa_score * .6) - (alpha_score * .4);
+
+      if (current_score < validity_ranking) {
+        validity_ranking = current_score;
+        final_est_key = curr_est_key;
+      }
     }
-    // TODO run an english/freq analysis on each of the potential
-    // keys
-  }
-
-  else {
-    throw std::invalid_argument(
-        "Unable to open file"
-        " specified by file name.");
+    return std::make_tuple(final_est_key,
+                           rep_xor_encrypt(final_est_key, decoded_string));
+  } else {
+    throw std::invalid_argument("Unable to open file specified by file name.");
   }
 }
 
@@ -464,7 +446,8 @@ unsigned int hamming_distance(const std::string &string_1,
 
   for (int i = 0; i < string_1.length() && i < string_2.length(); i++) {
     // Getting the differing bits
-    unsigned char nand_op_result = string_1.at(i) ^ string_2.at(i);
+    unsigned char nand_op_result =
+        (unsigned char)string_1.at(i) ^ string_2.at(i);
 
     // Getting Hamming weight via standard op w/ bitset
     bit_count += std::bitset<8>(nand_op_result).count();
@@ -477,6 +460,7 @@ unsigned int hamming_distance(const std::string &string_1,
 // failure.
 // There are some exceptions where success is indicated by the output of
 // Vanilla Ice lyrics
+// And yes, I know the test file should be separate from src
 void test_cases() {
   std::cout << "\nSet 1 test cases:\n\n";
 
@@ -500,7 +484,7 @@ void test_cases() {
                                       "1b37373331363f78151b7f2b783431333d783978"
                                       "28372d363c78373e783a393b3736")
             << "\n";
-  std::cout << "Challenge 4: " << detect_schar_xor("xor_strings.txt");
+  std::cout << "Challenge 4: " << detect_schar_xor("../txt/xor_strings.txt");
   std::cout << "Challenge 5: "
             << hex_encode_str(rep_xor_encrypt("ICE",
                                               "Burning 'em, if you ain't quick "
@@ -511,9 +495,16 @@ void test_cases() {
                        "c2a26226324272765272a282b2f20430a652e2c652a3124333a653e"
                        "2b2027630c692b20283165286326302e27282f")
             << "\n";
-  std::cout << "Hamming distance: "
-            << hamming_distance("this is a test", "wokka wokka!!!") << "\n";
-  std::cout << "Challenge 6: " << rep_xor_decrypt("challenge_6.txt", 2, 40);
+  std::cout << "Challenge 6 (corollary) - hamming distance: "
+            << (hamming_distance("this is a test", "wokka wokka!!!") == 37
+                    ? "0"
+                    : "1")
+            << "\n";
+  auto challenge_6_tup = rep_xor_decrypt("txt/challenge_6_decoded.txt", 2, 40);
+  std::cout << "Challenge 6:\n"
+            << "\n--Key:\n"
+            << std::get<0>(challenge_6_tup) << "\n\n--Message:\n"
+            << std::get<1>(challenge_6_tup) << "\n";
 
   // END TEST CASES
   std::cout << "\n";
