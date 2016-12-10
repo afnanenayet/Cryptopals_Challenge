@@ -240,9 +240,9 @@ double freqa_ranking(std::string english_string) {
   for (auto &map_elem : english_fr_dist) {
     // observed ratio of letters in string
     double ratio =
-        (static_cast<double>(std::count(
-            english_string.begin(), english_string.end(), map_elem.first))) /
-        (static_cast<double>(english_string.length()));
+        ((double) std::count(english_string.begin(), english_string.end(), 
+            map_elem.first)) /
+        ((double) english_string.length());
 
     radicand += pow((ratio - map_elem.second), 2);
   }
@@ -319,7 +319,8 @@ std::string rep_xor_encrypt(const std::string &key,
 std::vector<unsigned int> xor_key_size_bf(
     const std::string &xor_encoded_string,
     const unsigned int key_lower_limit = 1,
-    const unsigned int key_upper_limit = 40, const unsigned int num_chunks = 1,
+    const unsigned int key_upper_limit = 40, 
+    const unsigned int num_chunks = 1,
     const unsigned int num_candidates = 1) {
   std::vector<unsigned int> key_sz_scores(num_candidates);
   std::map<double, unsigned int> candidate_map;
@@ -360,7 +361,7 @@ std::vector<unsigned int> xor_key_size_bf(
 
   // getting lowest 3 scores and their corresponding keys
   for (auto iter = candidate_map.begin();
-       iter_index <= num_candidates && iter != candidate_map.end(); ++iter) {
+       iter_index < num_candidates && iter != candidate_map.end(); ++iter) {
     return_vector.push_back(iter->second);
     iter_index++;
   }
