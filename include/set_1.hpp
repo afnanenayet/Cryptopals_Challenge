@@ -15,6 +15,9 @@
 #include <numeric>
 #include <sstream>
 #include <tuple>
+#include <stdexcept>
+#include <functional>
+#include <cppcodec/base64_default_rfc4648.hpp>
 
 namespace set_1 {
 const std::string base64_cipher =
@@ -124,7 +127,7 @@ unsigned int hamming_distance(const std::string &, const std::string &);
 // @param the maximum key size (for guessing)
 // @param the number of key pairs to evaluate
 // @param the number of likely key size candidates to return
-std::vector <unsigned int> xor_key_size_bf(const std::string &, 
+std::vector<unsigned int> xor_key_size_bf(const std::string &, 
                              const unsigned int,
                              const unsigned int, 
                              const unsigned int, 
@@ -141,5 +144,16 @@ unsigned int xor_key_size_bf_multi(const std::string &, const unsigned int &,
                                    const unsigned int &, const unsigned int &,
                                    const unsigned int &);
 }
+
+// Parses the contents of a file to an STL string and strips newlines
+// @param a string with the relative file path to the string (remember to use 
+// the file path RELATIVE TO THE BINARY which isn't always the working directory 
+// of your source files) ;)
+std::string parse_file_to_string(const std::string &);
+
+// Decrypts a message using a given key via AES 128 bit using ECB
+// @param a string with the key
+// @param a string with amessage to be decrypted with the key provided
+std::string decrypt_aes_128_ecb(const std::string &, const std::string &);
 
 #endif // _SET_1_HPP
