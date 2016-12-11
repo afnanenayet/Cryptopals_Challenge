@@ -43,3 +43,4 @@ txt/
 *.cbp*
 tags
 challenge_solutions/
+.idea/
