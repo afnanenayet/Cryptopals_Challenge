@@ -513,8 +513,8 @@ namespace set_1 {
             &encrypted_text) {
         // Initializing decryption module from Crypto++ library
         ECB_Mode<AES>::Decryption aes_ecb_d;
-        auto c_key = (const unsigned char *) key.c_str();
-        aes_ecb_d.SetKey(c_key, sizeof(c_key));
+        const unsigned char* c_key = (const unsigned char *) key.c_str();
+        aes_ecb_d.SetKey(c_key, key.length());
         string decoded_string;
         
         try {
