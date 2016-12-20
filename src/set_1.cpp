@@ -599,6 +599,7 @@ namespace set_1 {
 
         std::cout << "Challenge 7: " << challenge_7_wrapper("YELLOW SUBMARINE", 
                 "txt/challenge_7.txt");
+
         // END TEST CASES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         std::cout << "\n";
     }
