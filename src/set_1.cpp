@@ -1,6 +1,8 @@
 #include "set_1.hpp"
 
 using std::cout;
+using std::string;
+using namespace CryptoPP;
 
 namespace set_1 {
     // Combines two hex characters to an 8 bit ASCII character
@@ -505,9 +507,39 @@ namespace set_1 {
         }
     }
 
-    std::string decrypt_aes_128_ecb(const std::string &key, const std::string
+    // Using Crypto++ library to use a key and an AES-ECB encrypted string to 
+    // dump decrypted output to another string
+    string decrypt_aes_128_ecb(const std::string &key, const std::string
             &encrypted_text) {
-        throw std::bad_function_call();
+        // Initializing decryption module from Crypto++ library
+        ECB_Mode<AES>::Decryption aes_ecb_d;
+        const unsigned char* c_key = (const unsigned char *) key.c_str();
+        aes_ecb_d.SetKey(c_key, key.length());
+        string decoded_string;
+        
+        try {
+            // StringSource does padding for us
+            StringSource ss(encrypted_text, true, new StreamTransformationFilter
+                (aes_ecb_d, new StringSink(decoded_string)));
+            return decoded_string;
+        }
+
+        catch(CryptoPP::Exception& e) {
+            std::cerr << e.what() << std::endl;
+            exit(1);
+        }
+    }
+
+    // A wrapper that calls the functions necessary to complete Challenge 7
+    std::string challenge_7_wrapper(const std::string &key, const std::string 
+            &input_file_path) {
+        auto input_string = parse_file_to_string(input_file_path);
+        auto b64_decoded_vec = base64::decode(input_string);
+        std::string decoded_string = std::string(b64_decoded_vec.begin(), 
+                    b64_decoded_vec.end());
+
+        string decoded_aes_str = decrypt_aes_128_ecb(key, decoded_string);
+        return decoded_aes_str;
     }
 
     // Output of 0 indicates successful test case. Any other number indicates
@@ -565,6 +597,8 @@ namespace set_1 {
                   << std::get<0>(challenge_6_tup) << "\n\n--Message:\n"
                   << std::get<1>(challenge_6_tup) << "\n";
 
+        std::cout << "Challenge 7: " << challenge_7_wrapper("YELLOW SUBMARINE", 
+                "txt/challenge_7.txt");
         // END TEST CASES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         std::cout << "\n";
     }
