@@ -18,6 +18,9 @@
 #include <stdexcept>
 #include <functional>
 #include <cppcodec/base64_default_rfc4648.hpp>
+#include <cryptopp/aes.h>
+#include <cryptopp/modes.h>
+#include <cryptopp/filters.h>
 
 namespace set_1 {
 const std::string base64_cipher =
@@ -151,7 +154,7 @@ unsigned int xor_key_size_bf_multi(const std::string &, const unsigned int &,
 // of your source files) ;)
 std::string parse_file_to_string(const std::string &);
 
-// Decrypts a message using a given key via AES 128 bit using ECB
+// Decrypts a message using a given key via AES 128 bit using ECB mode
 // @param a string with the key
 // @param a string with amessage to be decrypted with the key provided
 std::string decrypt_aes_128_ecb(const std::string &, const std::string &);

@@ -2,8 +2,10 @@
 This is an ongoing attempt to solve the Matasano Cryptopals Challenge in C++. 
 The challenges are taken from here: http://www.cryptopals.com
 
-## Acknowledgements
+## Acknowledgements/Dependencies
 I used the cppcodec library, found here: https://github.com/tplgy/cppcodec with my solutions.
+This solution also uses the OpenSSL library from Homebrew. In brew, type in `brew install openssl`. 
+If you are building without CMake, pass `-I/usr/local/opt/openssl/include` to your C++ compiler.
 
 ## Building the solutions
 First, clone the repo. (In terminal): `git clone https://github.com/afnanenayet/Cryptopals_Challenge.git`
