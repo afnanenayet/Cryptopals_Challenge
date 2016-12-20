@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.7)
 
 # Project variables
 set(PROJECT_NAME Cryptopals_Challenge)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
 
 project(${PROJECT_NAME} C CXX)
 
