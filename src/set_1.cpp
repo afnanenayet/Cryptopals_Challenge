@@ -1,6 +1,7 @@
 #include "set_1.hpp"
 
 using std::cout;
+using std::endl;
 using std::string;
 using namespace CryptoPP;
 
@@ -125,7 +126,7 @@ namespace set_1 {
     // string to binary then runs a xor operation across the chars,
     // then encodes the xor'd string back to hex
     std::string hex_xor_op(const std::string &hex_string_1,
-                           const std::string &hex_string_2) {
+            const std::string &hex_string_2) {
         if (hex_string_1.length() != hex_string_2.length()) {
             throw std::invalid_argument("The string buffers must be the same length.");
         } else {
@@ -222,22 +223,22 @@ namespace set_1 {
     double freqa_ranking(std::string english_string) {
         // Converting all the letters to lower case for the comparison
         std::transform(english_string.begin(), english_string.end(),
-                       english_string.begin(), ::tolower);
+                english_string.begin(), ::tolower);
 
         // The distribution of the top 12 letters in the English language
         const std::map<char, double> english_fr_dist = {
-                {'e', .12702},
-                {'t', .09056},
-                {'a', .08167},
-                {'o', .07507},
-                {'i', .06966},
-                {'n', .06749},
-                {'s', .06327},
-                {'h', .06094},
-                {'r', .05987},
-                {'l', .04025},
-                {'d', .04253},
-                {'u', .02759}};
+            {'e', .12702},
+            {'t', .09056},
+            {'a', .08167},
+            {'o', .07507},
+            {'i', .06966},
+            {'n', .06749},
+            {'s', .06327},
+            {'h', .06094},
+            {'r', .05987},
+            {'l', .04025},
+            {'d', .04253},
+            {'u', .02759}};
 
         // Error from normal distribution for given letters in the string
         std::map<char, double> string_fr_dist;
@@ -251,9 +252,9 @@ namespace set_1 {
         for (auto &map_elem : english_fr_dist) {
             // observed ratio of letters in string
             double ratio =
-                    ((double) std::count(english_string.begin(), english_string.end(),
-                                         map_elem.first)) /
-                    ((double) english_string.length());
+                ((double) std::count(english_string.begin(), english_string.end(),
+                    map_elem.first)) /
+                ((double) english_string.length());
 
             radicand += pow((ratio - map_elem.second), 2);
         }
@@ -272,7 +273,7 @@ namespace set_1 {
 
         // Ignoring spaces in the alphabetical ranking
         alpha_score /= alpha_string.length() -
-                       std::count(alpha_string.begin(), alpha_string.end(), ' ');
+            std::count(alpha_string.begin(), alpha_string.end(), ' ');
         return alpha_score;
     }
 
@@ -313,7 +314,7 @@ namespace set_1 {
     // XORs a string against each character of a key, using modulus
     // arithmetic to cycle through the key
     std::string rep_xor_encrypt(const std::string &key,
-                                const std::string &message) {
+            const std::string &message) {
         std::string encrypted_message;
         encrypted_message.reserve(message.length());
 
@@ -341,9 +342,9 @@ namespace set_1 {
         // Iterating through difference key sizes and trying to find the most
         // likely key size
         for (auto curr_key_size = key_lower_limit;
-             curr_key_size <= key_upper_limit &&
-             curr_key_size < xor_encoded_string.length();
-             curr_key_size++) {
+                curr_key_size <= key_upper_limit &&
+                curr_key_size < xor_encoded_string.length();
+                curr_key_size++) {
             double division_factor = 0;
             double curr_total = 0;
             double normalized_ham_dist;
@@ -352,14 +353,14 @@ namespace set_1 {
             // it. NOTE THAT IT TRIES BUT WON'T ENFORCE THE CHUNK AVG (applying
             // in cases where multiple chunks exceed the sz of the string)
             while (division_factor < num_chunks &&
-                   division_factor * curr_key_size < xor_encoded_string.length()) {
+                    division_factor * curr_key_size < xor_encoded_string.length()) {
                 // Finding edit distance, normalizing by key size, and finding min
                 // to estimate key size
                 double curr_n_h_d = hamming_distance(
                         xor_encoded_string.substr(curr_key_size * division_factor,
-                                                  curr_key_size),
+                            curr_key_size),
                         xor_encoded_string.substr(curr_key_size * (division_factor + 1),
-                                                  curr_key_size));
+                            curr_key_size));
                 curr_total += curr_n_h_d / curr_key_size;
                 division_factor++;
             }
@@ -372,7 +373,7 @@ namespace set_1 {
 
         // getting lowest 3 scores and their corresponding keys
         for (auto iter = candidate_map.begin();
-             iter_index < num_candidates && iter != candidate_map.end(); ++iter) {
+                iter_index < num_candidates && iter != candidate_map.end(); ++iter) {
             return_vector.push_back(iter->second);
             iter_index++;
         }
@@ -403,12 +404,12 @@ namespace set_1 {
             encoded_string.reserve(base64_file.tellg());
             base64_file.seekg(0, std::ios::beg);
             encoded_string.assign((std::istreambuf_iterator<char>(base64_file)),
-                                   std::istreambuf_iterator<char>());
+                    std::istreambuf_iterator<char>());
             base64_file.close();
-            
+
             // Stripping newline characters
             encoded_string.erase(std::remove(encoded_string.begin(), 
-                    encoded_string.end(), '\n'), encoded_string.end());
+                        encoded_string.end(), '\n'), encoded_string.end());
 
             // Decoding base64 encoded input from text file
             auto decoded_data_vec = base64::decode(encoded_string);
@@ -417,9 +418,9 @@ namespace set_1 {
 
             // Brute force guessing the key size
             auto key_candidates =
-                    xor_key_size_bf(decoded_string, key_lower_limit, key_upper_limit,
-                                    3,   // num pairs
-                                    3);  // num key candidates to return
+                xor_key_size_bf(decoded_string, key_lower_limit, key_upper_limit,
+                        3,   // num pairs
+                        3);  // num key candidates to return
 
             std::vector<std::string> decrypted_strings(key_candidates.size());
 
@@ -456,7 +457,7 @@ namespace set_1 {
                 }
             }
             return std::make_tuple(final_est_key,
-                                   rep_xor_encrypt(final_est_key, decoded_string));
+                    rep_xor_encrypt(final_est_key, decoded_string));
         } else {
             throw std::invalid_argument("Unable to open file specified by file name.");
         }
@@ -465,13 +466,13 @@ namespace set_1 {
     // Uses the standard bitset Hamming weight method to calculate the
     // differing number of bits
     unsigned int hamming_distance(const std::string &string_1,
-                                  const std::string &string_2) {
+            const std::string &string_2) {
         unsigned int bit_count = 0;
 
         for (int i = 0; i < string_1.length() && i < string_2.length(); i++) {
             // Getting the differing bits
             unsigned char nand_op_result =
-                    (unsigned char) string_1.at(i) ^string_2.at(i);
+                (unsigned char) string_1.at(i) ^string_2.at(i);
 
             // Getting Hamming weight via standard op w/ bitset
             bit_count += std::bitset<8>(nand_op_result).count();
@@ -493,12 +494,12 @@ namespace set_1 {
             file_string.reserve(file_stream.tellg());
             file_stream.seekg(0, std::ios::beg);
             file_string.assign((std::istreambuf_iterator<char>(file_stream)),
-                                   std::istreambuf_iterator<char>());
+                    std::istreambuf_iterator<char>());
             file_stream.close();
-            
+
             // Stripping newline characters
             file_string.erase(std::remove(file_string.begin(), 
-                    file_string.end(), '\n'), file_string.end());
+                        file_string.end(), '\n'), file_string.end());
             return file_string;
         }
 
@@ -516,11 +517,11 @@ namespace set_1 {
         const unsigned char* c_key = (const unsigned char *) key.c_str();
         aes_ecb_d.SetKey(c_key, key.length());
         string decoded_string;
-        
+
         try {
             // StringSource does padding for us
             StringSource ss(encrypted_text, true, new StreamTransformationFilter
-                (aes_ecb_d, new StringSink(decoded_string)));
+                    (aes_ecb_d, new StringSink(decoded_string)));
             return decoded_string;
         }
 
@@ -536,10 +537,94 @@ namespace set_1 {
         auto input_string = parse_file_to_string(input_file_path);
         auto b64_decoded_vec = base64::decode(input_string);
         std::string decoded_string = std::string(b64_decoded_vec.begin(), 
-                    b64_decoded_vec.end());
+                b64_decoded_vec.end());
 
         string decoded_aes_str = decrypt_aes_128_ecb(key, decoded_string);
         return decoded_aes_str;
+    }
+
+    // TODO complete challenge 8
+    string challenge_8_wrapper(const string &full_file_path, unsigned int 
+            block_size = 16) {
+        std::ifstream input_file(full_file_path);
+
+        if (input_file.is_open()) {
+            // Each line is a different input and each input will be stored as 
+            // a string in this vector
+            std::vector<string> encoded_hex_inputs;
+            std::vector<string> decoded_hex_inputs; 
+
+            // Parsing file
+            string line;
+            std::ifstream input_file(full_file_path);
+
+            while (std::getline(input_file, line)) {
+                encoded_hex_inputs.push_back(line);
+
+                // The cppcodec library decodes to a vector of unsigned chars, 
+                // we convert that to a string before pushing to our own vector 
+                // of strings
+                auto decoded_hex_vec = cppcodec::hex_lower::decode(line);
+                string decoded_hex_str = string(decoded_hex_vec.begin(), 
+                        decoded_hex_vec.end());
+                decoded_hex_inputs.push_back(decoded_hex_str);  
+
+                // The block size must fit evenly to each string
+                if (decoded_hex_str.length() % block_size != 0) {
+                    throw std::invalid_argument("Block size does not fit evenly "
+                            "with ciphertext");
+                }
+            }
+
+            // Analyzing each decoded string to see if there are identical 16 bit
+            // blocks, as AES with ECB is using a 16 bit key and identical input 
+            // produces identical output
+
+            // stores the maximum number of identical blocks
+            unsigned int max_id_blocks = 0;
+
+            // stores the index in decoded_hex_inputs of the string that 
+            // has the maximum # of blocks
+            unsigned int max_index;
+            size_t position = 0;
+
+            // For each input string, we are checking the number of repetitions 
+            // that occur from each 16 byte substring (16 bytes = 16 chars)
+            // The most repetitions indicates that ECB was used as other encryption 
+            // methods should look pseudo random
+            for (int i = 0; i < decoded_hex_inputs.size(); i++) {
+                string curr_str = decoded_hex_inputs[i];
+                unsigned int rep_count = 0;
+
+                while (curr_str.length() > 0) {
+                    string target_str = curr_str.substr(0, block_size);
+                    size_t position = curr_str.find(target_str);
+
+                    // Finding number of repeated substrings in string and 
+                    // adding to total count
+                    while (position != string::npos) {
+                        curr_str.erase(position, block_size);
+                        rep_count++;
+                        position = curr_str.find(target_str, position);
+                    }
+
+                    // decrease rep_count by 1 because it counts the first 
+                    // instance of a unique substring as one repetition
+                    rep_count--;
+                }
+
+                // Updating max's as necessary
+                if (rep_count > max_id_blocks) {
+                    max_id_blocks = rep_count;
+                    max_index = i;
+                }
+            }
+            return encoded_hex_inputs[max_index];
+        }
+
+        else {
+            throw std::invalid_argument("File path was not valid");
+        }
     }
 
     // Output of 0 indicates successful test case. Any other number indicates
@@ -548,57 +633,61 @@ namespace set_1 {
     // Vanilla Ice lyrics
     // And yes, I know the test cases should be separate from src
     void test_cases() {
-        std::cout << "\nSet 1 test cases:\n\n";
+        std::cout << "\nSet 1 test cases:" << endl << endl;
 
         // BEGIN TEST CASES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         std::cout << "Challenge 1: "
-                  << hex_to_base64(
-                          "49276d206b696c6c696e6720796f757220627261696"
-                        "e206c696b65206120706f69736f6e6f7573206d757368726f6f6d")
-                          .compare(
-                          "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG1"
-                          "1c2hyb29t")
-                  << "\n";
+            << hex_to_base64(
+                    "49276d206b696c6c696e6720796f757220627261696"
+                    "e206c696b65206120706f69736f6e6f7573206d757368726f6f6d")
+            .compare(
+                    "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG1"
+                    "1c2hyb29t")
+            << endl;
 
         std::cout << "Challenge 2: "
-                  << (hex_xor_op("1c0111001f010100061a024b53535009181c",
-                                 "686974207468652062756c6c277320657965")
-                          .compare("746865206b696420646f6e277420706c6179"))
-                  << "\n";
+            << (hex_xor_op("1c0111001f010100061a024b53535009181c",
+                        "686974207468652062756c6c277320657965")
+                    .compare("746865206b696420646f6e277420706c6179"))
+            << endl;
 
         std::cout << "Challenge 3: " << single_xor_decrypt(
                 "1b37373331363f78151b7f2b783431333d783978"
-                        "28372d363c78373e783a393b3736")
-                  << "\n";
+                "28372d363c78373e783a393b3736")
+            << endl;
 
         std::cout << "Challenge 4: " << detect_schar_xor("../txt/xor_strings.txt");
 
         std::cout << "Challenge 5: "
-                  << hex_encode_str(rep_xor_encrypt("ICE",
+            << hex_encode_str(rep_xor_encrypt("ICE",
                         "Burning 'em, if you ain't quick "
                         "and nimble\nI go crazy when I "
                         "hear a cymbal"))
-                        .compare(
-                        "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343"
-                        "c2a26226324272765272a282b2f20430a652e2c652a3124333a653e"
-                        "2b2027630c692b20283165286326302e27282f")
-                  << "\n";
+            .compare(
+                    "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343"
+                    "c2a26226324272765272a282b2f20430a652e2c652a3124333a653e"
+                    "2b2027630c692b20283165286326302e27282f")
+            << endl;
 
         std::cout << "Challenge 6 (corollary) - hamming distance: "
-                  << (hamming_distance("this is a test", "wokka wokka!!!") == 37
-                      ? "0"
-                      : "1")
-                  << "\n";
+            << (hamming_distance("this is a test", "wokka wokka!!!") == 37
+                    ? "0"
+                    : "1")
+            << endl;
 
         auto challenge_6_tup = rep_xor_decrypt("txt/challenge_6.txt", 2, 40);
         std::cout << "Challenge 6: (cont'd below) ~~~\n"
-                  << "\n--Key:\n"
-                  << std::get<0>(challenge_6_tup) << "\n\n--Message:\n"
-                  << std::get<1>(challenge_6_tup) << "\n";
+            << "\n--Key:\n"
+            << std::get<0>(challenge_6_tup) << "\n\n--Message:\n"
+            << std::get<1>(challenge_6_tup) << "\n";
 
-        std::cout << "Challenge 7: " << challenge_7_wrapper("YELLOW SUBMARINE", 
-                "txt/challenge_7.txt");
+        std::cout << "Challenge 7: " << endl << challenge_7_wrapper("YELLOW SUBMARINE", 
+                "txt/challenge_7.txt") << endl;
+
+        // TODO complete challenge 8
+        std::cout << "Challenge 8: " << challenge_8_wrapper(
+                "txt/challenge_8_input.txt") <<  endl;
 
         // END TEST CASES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         std::cout << "\n";

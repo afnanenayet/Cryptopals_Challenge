@@ -18,6 +18,7 @@
 #include <stdexcept>
 #include <functional>
 #include <cppcodec/base64_default_rfc4648.hpp>
+#include <cppcodec/hex_lower.hpp>
 #include <cryptopp/aes.h>
 #include <cryptopp/modes.h>
 #include <cryptopp/filters.h>
@@ -146,17 +147,36 @@ std::vector<unsigned int> xor_key_size_bf(const std::string &,
 unsigned int xor_key_size_bf_multi(const std::string &, const unsigned int &,
                                    const unsigned int &, const unsigned int &,
                                    const unsigned int &);
-}
 
 // Parses the contents of a file to an STL string and strips newlines
 // @param a string with the relative file path to the string (remember to use 
 // the file path RELATIVE TO THE BINARY which isn't always the working directory 
-// of your source files) ;)
+// of your source files)
 std::string parse_file_to_string(const std::string &);
 
 // Decrypts a message using a given key via AES 128 bit using ECB mode
+// @returns a decoded string
 // @param a string with the key
 // @param a string with amessage to be decrypted with the key provided
 std::string decrypt_aes_128_ecb(const std::string &, const std::string &);
+
+// A wrapper that calls the appropriate functions to complete Challenge 7, 
+// decrypting an input with a key with AES in ECB mode after decoding the 
+// input from Base64 to plaintext ASCII
+// @returns a decoded string
+// @param (string) the key
+// @param (string) the path of the .txt file with the challenge input
+std::string challenge_7_wrapper(const std::string &, const std::string &);
+
+// Has yet to be implemented
+// Solves Challenge 8: detecting AES in ECB mode
+// @param (string) the full path - including the filename of the file to 
+// be used as input
+// @param (unsigned int) the block size to inspect - defaults to 16
+// @return (string) the ciphertext as a string that has been flagged as 
+// using AES with ECB
+std::string challenge_8_wrapper(const std::string &, unsigned int);
+
+}
 
 #endif // _SET_1_HPP
