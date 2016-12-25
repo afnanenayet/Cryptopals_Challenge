@@ -4,10 +4,9 @@ The challenges are taken from here: http://www.cryptopals.com
 
 ## Acknowledgements/Dependencies
 I used the cppcodec library, found here: https://github.com/tplgy/cppcodec with my solutions.
-This solution also uses the OpenSSL library from Homebrew. In brew, type in `brew install openssl`. 
-If you are building without CMake, pass `-I/usr/local/opt/openssl/include` to your C++ compiler.
+This solution also uses the Crypto++ library from Homebrew. In Homebrew, type in `brew install cryptopp --c++11`. 
 
-## Building the solutions
+## Building the project
 First, clone the repo. (In terminal): `git clone https://github.com/afnanenayet/Cryptopals_Challenge.git`
 
 Then to build the binary: `cmake . && make`
