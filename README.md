@@ -9,10 +9,10 @@ This solution also uses the Crypto++ library from Homebrew. In Homebrew, type in
 ## Building the project
 First, clone the repo. (In terminal): `git clone https://github.com/afnanenayet/Cryptopals_Challenge.git`
 
-Then to build the binary: `cmake . && make`
+Then to build the binary: `mkdir bin && cmake . && make`
 
 If you want to edit in Vim, you may want to run `ctags -R . && make tags`
 
-To run the executable: `./Cryptopals_Challenge`
+To run the executable: `bin/Cryptopals_Challenge`
 
 I personally built this using a compiler that supports C++14. I think it should work with C++11 but I haven't tested it.
