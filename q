@@ -5,8 +5,6 @@
 #include <string>
 #include <sstream>
 #include <set_1.hpp>
-#include <cryptopp/modes.h>
-#include <cryptopp/filters.h>
 
 namespace set_2 {
     // Runs the test cases for the challenges in set 2
