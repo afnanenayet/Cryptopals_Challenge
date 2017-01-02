@@ -320,7 +320,7 @@ namespace set_1 {
 
         // Performing a XOR op for every character in the message string
         for (int i = 0; i < message.length(); i++) {
-            encrypted_message.push_back(message.at(i) ^ (key.at(i % key.length() )));
+            encrypted_message.push_back(message.at(i) ^ (key.at(i % key.length())));
         }
 
         return encrypted_message;

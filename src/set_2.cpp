@@ -4,6 +4,7 @@ using std::string;
 using std::cout;
 using std::endl;
 using namespace CryptoPP;
+using namespace std::literals::string_literals;
 
 namespace set_2 {
     // Computes the number of bytes to add to the string, converts that 
@@ -29,39 +30,52 @@ namespace set_2 {
         return padded_string_stream.str();
     }
 
-    string cbc_mode(const string &input, const string &key, const string &iv) {
+    string xor_block_add(const string &block_1, const string &block_2) {
+        if (block_1.length() != block_2.length()) {
+            throw std::invalid_argument("Strings must have same length");
+        }
+
+        string result;
+        result.reserve(block_1.length());
+
+        for (auto i = 0; i < block_1.length(); i++) {
+            result.push_back((unsigned char) block_1.at(i) ^ 
+                    (unsigned char) block_2.at(i));
+        }
+
+        return result;
+    }
+
+    string aes_128_cbc_encrypt(const string &input, const string &key, 
+            const string &iv) {
         // Initializing Crypto++ ECB implementation
-        const unsigned char* ecb_key = (const unsigned char*) key.c_str();
+        auto ecb_key = (const unsigned char*) key.c_str();
         ECB_Mode<AES>::Encryption ecb_encrypt;
         ecb_encrypt.SetKey(ecb_key, key.size());
 
-        string curr_plain_block, curr_encrypted_block, cbc_result;
+        string curr_plain_block, encrypted_string;
         string curr_xor_block = iv;
-        
+
         // Using ECB for each block - encrypting each plaintext block with 
         // previous encrypted block or initialization vector before 
         // feeding into ECB cipher
         for (auto i = 0; i < input.length(); i += key.length()) {
             try {
+                string curr_encrypted_block;
+
                 // XOR'ing current plaintext block against last encrypted
                 // block - (starts with the initialization vector)
-                curr_plain_block = set_1::rep_xor_encrypt(curr_xor_block, 
+                string curr_input_block = xor_block_add(curr_xor_block, 
                         input.substr(i, key.length()));
 
-                StringSource ss(curr_plain_block, true,
+                StringSource ss(curr_input_block, true,
                         new StreamTransformationFilter(ecb_encrypt,
-                            new StringSink(curr_encrypted_block
-                                ) // StringSink
+                            new StringSink(curr_encrypted_block) 
                             ) // StreamTransformationFilter
                         ); // StringSource ss
 
                 curr_xor_block = curr_encrypted_block;
-                cbc_result += curr_encrypted_block;
-
-                cout << curr_encrypted_block;
-
-                curr_encrypted_block.clear();
-                curr_encrypted_block.reserve(key.length());
+                encrypted_string += curr_encrypted_block;
             }
 
             catch (CryptoPP::Exception &e) {
@@ -70,7 +84,39 @@ namespace set_2 {
             }
         }
 
-        return cbc_result;
+        return encrypted_string;
+    }
+
+    string aes_128_cbc_decrypt(const string &input, const string &key, 
+            const string &iv) {
+        auto ecb_key = (const unsigned char*) key.c_str();
+        ECB_Mode<AES>::Decryption ecb_decrypt;
+        ecb_decrypt.SetKey(ecb_key, key.size());
+        string decrypted_string;
+        string xor_block = iv;
+
+        for (auto i = 0; i < input.length(); i += key.length()) {
+            try {
+                string curr_decrypt_blk;
+                string curr_input_block = input.substr(i, key.length());
+
+                StringSource ss(curr_input_block, true,
+                        new StreamTransformationFilter(ecb_decrypt,
+                            new StringSink(curr_decrypt_blk) 
+                            ) // StreamTransformationFilter
+                        ); // StringSource ss
+
+                decrypted_string += xor_block_add(curr_decrypt_blk, xor_block);
+                xor_block = curr_input_block;
+            }
+
+            catch (CryptoPP::Exception &e) {
+                std::cerr << e.what() << endl;
+                exit(1);
+            }
+        }
+
+        return decrypted_string;
     }
 
     // Challenge wrappers: functions that wrap the challenges to provide the 
@@ -79,8 +125,11 @@ namespace set_2 {
     string challenge_10_wrapper(const string &input_fp, const string &key, 
             const string &iv) {
         string input_parse = set_1::parse_file_to_string(input_fp);
+        auto b64_decode_vec = base64::decode(input_parse);
 
-        return cbc_mode(input_parse, key, iv);
+        return aes_128_cbc_decrypt(string(b64_decode_vec.begin(),
+                    b64_decode_vec.end()), key, iv);
+       //  return aes_128_cbc_decrypt(input_parse, key, iv);
     }
 
     void test_cases() {
@@ -89,9 +138,13 @@ namespace set_2 {
         // BEGIN TEST CASES
 
         cout << "Challenge 9: " << pkcs_7_padding("YELLOW SUBMARINE", 20) << endl;
-        
+
+        std::string challenge_10_iv = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"s;
         cout << "Challenge 10: " << challenge_10_wrapper("txt/challenge_10.txt"
-                , "YELLOW SUBMARINE", "\x00") << endl;
+                , "YELLOW SUBMARINE", challenge_10_iv) << endl;
+
+        // auto encryption_test = aes_128_cbc_encrypt(pkcs_7_padding("YELLOW SUBMARINE", 16), "YELLOW SUBMARINE", challenge_10_iv);
+        // cout << aes_128_cbc_decrypt(encryption_test, "YELLOW SUBMARINE", challenge_10_iv);
 
         // END TEST CASES
     }
