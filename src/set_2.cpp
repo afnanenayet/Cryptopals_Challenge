@@ -95,18 +95,24 @@ namespace set_2 {
         string decrypted_string;
         string xor_block = iv;
 
+        // decrypt each block with ECB then XORs with the xor_block
+        // updates xor block to be the last encrypted block
         for (auto i = 0; i < input.length(); i += key.length()) {
             try {
                 string curr_decrypt_blk;
                 string curr_input_block = input.substr(i, key.length());
 
+                // CryptoPP ECB decryption
                 StringSource ss(curr_input_block, true,
                         new StreamTransformationFilter(ecb_decrypt,
                             new StringSink(curr_decrypt_blk) 
                             ) // StreamTransformationFilter
                         ); // StringSource ss
 
+                // XORing the string with xor block/IV for final output
                 decrypted_string += xor_block_add(curr_decrypt_blk, xor_block);
+
+                // xor block is the encrypted block that we just decrypted
                 xor_block = curr_input_block;
             }
 
