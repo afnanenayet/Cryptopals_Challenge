@@ -145,12 +145,15 @@ namespace set_2 {
 
         cout << "Challenge 9: " << pkcs_7_padding("YELLOW SUBMARINE", 20) << endl;
 
-        std::string challenge_10_iv = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"s;
+        std::string challenge_10_iv = "\x00\x00\x00\x00\x00\x00\x00\x00\x00" 
+            "\x00\x00\x00\x00\x00\x00\x00"s;
         cout << "Challenge 10: " << challenge_10_wrapper("txt/challenge_10.txt"
                 , "YELLOW SUBMARINE", challenge_10_iv) << endl;
 
-        // auto encryption_test = aes_128_cbc_encrypt(pkcs_7_padding("YELLOW SUBMARINE", 16), "YELLOW SUBMARINE", challenge_10_iv);
-        // cout << aes_128_cbc_decrypt(encryption_test, "YELLOW SUBMARINE", challenge_10_iv);
+        /*auto encryption_test = aes_128_cbc_encrypt(
+         * pkcs_7_padding("YELLOW SUBMARINE", 16), "YELLOW SUBMARINE", challenge_10_iv);
+        cout << aes_128_cbc_decrypt(encryption_test, "YELLOW SUBMARINE", challenge_10_iv);
+        */
 
         // END TEST CASES
     }
