@@ -8,6 +8,7 @@
 #include <cryptopp/modes.h>
 #include <cryptopp/filters.h>
 #include <cppcodec/base64_default_rfc4648.hpp>
+#include <cryptopp/base64.h>
 
 namespace set_2 {
     // Runs the test cases for the challenges in set 2
@@ -55,6 +56,16 @@ namespace set_2 {
     // @returns (string)
     std::string challenge_10_wrapper(const std::string &, const std::string &, 
             const std::string &);
+
+    // Decode a string encoded with base64 to regular ASCII text
+    // @param (string) the input string encoded with base64
+    // @returns (string) the decoded string
+    std::string base64_decode(const std::string &);
+
+    // Encode a string with base64
+    // @param (string) the input string
+    // @returns (string) a string encoded with base64
+    std::string base64_encode(const std::string &);
 }
 
 #endif /* _SET_2_HPP */

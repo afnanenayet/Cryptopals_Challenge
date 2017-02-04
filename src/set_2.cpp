@@ -87,9 +87,35 @@ namespace set_2 {
         return encrypted_string;
     }
 
+    // Uses CryptoPP module to decode base64 to regular text
+    string base64_decode(const string &input) {
+        string decoded;
+
+        StringSource ss(input, true,
+            new Base64Decoder(
+                 new StringSink(decoded)
+             ) // StringSink
+         ); // StringSource
+
+        return decoded;
+    }
+
+    string base64_encode(const string &input) {
+        string encoded;
+
+        StringSource ss(input, true,
+                new Base64Encoder(
+                    new StringSink(encoded)
+                ) // StringSink
+            ); // StringSource
+
+        return encoded;
+    }
+
+    // Uses CryptoPP ECB mode to decode blocks to implement AES ECB mode
     string aes_128_cbc_decrypt(const string &input, const string &key, 
             const string &iv) {
-        auto ecb_key = (const unsigned char*) key.c_str();
+        byte* ecb_key = (byte*) key.c_str();
         ECB_Mode<AES>::Decryption ecb_decrypt;
         ecb_decrypt.SetKey(ecb_key, key.size());
         string decrypted_string;
@@ -97,10 +123,12 @@ namespace set_2 {
 
         // decrypt each block with ECB then XORs with the xor_block
         // updates xor block to be the last encrypted block
-        for (auto i = 0; i < input.length(); i += key.length()) {
+        for (auto i = 0; i /*+ key.size()*/ < input.size(); i += key.size()) {
             try {
                 string curr_decrypt_blk;
-                string curr_input_block = input.substr(i, key.length());
+                curr_decrypt_blk.reserve(key.size());
+
+                string curr_input_block = input.substr(i, key.size());
 
                 // CryptoPP ECB decryption
                 StringSource ss(curr_input_block, true,
@@ -131,10 +159,11 @@ namespace set_2 {
     string challenge_10_wrapper(const string &input_fp, const string &key, 
             const string &iv) {
         string input_parse = set_1::parse_file_to_string(input_fp);
-        auto b64_decode_vec = base64::decode(input_parse);
+        string b64_decode_vec = base64_decode(input_parse); 
+        cout << "\nRaw input length: " << input_parse.size() << "\n";
+        cout << "\nDecode length: " << b64_decode_vec.size() << "\n";
 
-        return aes_128_cbc_decrypt(string(b64_decode_vec.begin(),
-                    b64_decode_vec.end()), key, iv);
+        return aes_128_cbc_decrypt(b64_decode_vec, key, iv);
        //  return aes_128_cbc_decrypt(input_parse, key, iv);
     }
 
@@ -147,7 +176,7 @@ namespace set_2 {
 
         std::string challenge_10_iv = "\x00\x00\x00\x00\x00\x00\x00\x00\x00" 
             "\x00\x00\x00\x00\x00\x00\x00"s;
-        cout << "Challenge 10: " << challenge_10_wrapper("txt/challenge_10.txt"
+        cout << "Challenge 10: " << challenge_10_wrapper("txt/challenge_10_b64_dec.txt"
                 , "YELLOW SUBMARINE", challenge_10_iv) << endl;
 
         /*auto encryption_test = aes_128_cbc_encrypt(
