@@ -14,12 +14,11 @@ namespace set_2 {
         // The number of bytes we need to add to make the string a multiple 
         // of the desired block size
         auto rem_bytes = block_size - (input_string.length() % block_size); 
-
+        
         // Initializing a stream with the input string so we can easily append 
         // the hex chars for padding
         std::stringstream padded_string_stream(input_string, std::ios_base::app 
                 | std::ios_base::out);
-
 
         // Adding the byte string repeatedly to the padded string so it will 
         // have as many bytes as desired
@@ -66,7 +65,7 @@ namespace set_2 {
                 // XOR'ing current plaintext block against last encrypted
                 // block - (starts with the initialization vector)
                 string curr_input_block = xor_block_add(curr_xor_block, 
-                        input.substr(i, key.length()));
+                        input.substr(i, key.length())); 
 
                 StringSource ss(curr_input_block, true,
                         new StreamTransformationFilter(ecb_encrypt,
@@ -96,10 +95,11 @@ namespace set_2 {
                  new StringSink(decoded)
              ) // StringSink
          ); // StringSource
-
+         
         return decoded;
     }
 
+    // Uses CryptoPP module to encode regular text to base64
     string base64_encode(const string &input) {
         string encoded;
 
@@ -110,6 +110,19 @@ namespace set_2 {
             ); // StringSource
 
         return encoded;
+    }
+
+    // Prints the binary representation of each char in a string using 
+    // the stdlib's bitset class
+    void print_string_binary(const string &input) {
+        cout << endl << "String representation in binary:" << endl;
+
+        // Looping through each char and converting to a bitset
+        for (auto word : input) {
+            cout << endl << std::bitset<8>(word) << " " << (unsigned int) word << endl;
+        }
+
+        cout << endl << "End string" << endl;
     }
 
     // Uses CryptoPP ECB mode to decode blocks to implement AES ECB mode
@@ -123,20 +136,28 @@ namespace set_2 {
 
         // decrypt each block with ECB then XORs with the xor_block
         // updates xor block to be the last encrypted block
-        for (auto i = 0; i /*+ key.size()*/ < input.size(); i += key.size()) {
+        for (auto i = 0; i < key.size() - 1 /* i < input.size()*/ ; i += key.size()) {
             try {
                 string curr_decrypt_blk;
                 curr_decrypt_blk.reserve(key.size());
 
                 string curr_input_block = input.substr(i, key.size());
+                cout << "\nInput block length: " << curr_input_block.size() << endl;
+
+                // TODO REMOVE DEBUG
+                print_string_binary(curr_input_block);
 
                 // CryptoPP ECB decryption
                 StringSource ss(curr_input_block, true,
                         new StreamTransformationFilter(ecb_decrypt,
-                            new StringSink(curr_decrypt_blk) 
+                            new StringSink(curr_decrypt_blk),
+                            StreamTransformationFilter::PKCS_PADDING
                             ) // StreamTransformationFilter
                         ); // StringSource ss
 
+                // TODO DEBUG REMOVE
+                cout << endl << "decrypted block: " << curr_decrypt_blk << endl;
+                
                 // XORing the string with xor block/IV for final output
                 decrypted_string += xor_block_add(curr_decrypt_blk, xor_block);
 
@@ -153,18 +174,28 @@ namespace set_2 {
         return decrypted_string;
     }
 
+    // Tests to ensure that CBC encryption and decryption are consistent
+    bool test_cbc(const string &input) {
+        string iv = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"s;
+
+        const string key = "YELLOW SUBMARINE";
+        string encrypted = aes_128_cbc_encrypt(input, key, iv);
+        string decrypted = aes_128_cbc_decrypt(encrypted, key, iv);
+        return decrypted == input;
+    }
+
     // Challenge wrappers: functions that wrap the challenges to provide the 
     // correct output (if necessary)
     // TODO challenge 10
     string challenge_10_wrapper(const string &input_fp, const string &key, 
             const string &iv) {
         string input_parse = set_1::parse_file_to_string(input_fp);
-        string b64_decode_vec = base64_decode(input_parse); 
+        string b64_decoded = base64_decode(input_parse); 
+        cout << "\nDecoded string: \n" << b64_decoded << endl;
         cout << "\nRaw input length: " << input_parse.size() << "\n";
-        cout << "\nDecode length: " << b64_decode_vec.size() << "\n";
+        cout << "\nDecode length: " << b64_decoded.size() << "\n";
 
-        return aes_128_cbc_decrypt(b64_decode_vec, key, iv);
-       //  return aes_128_cbc_decrypt(input_parse, key, iv);
+        return aes_128_cbc_decrypt(b64_decoded, key, iv);
     }
 
     void test_cases() {
@@ -176,13 +207,15 @@ namespace set_2 {
 
         std::string challenge_10_iv = "\x00\x00\x00\x00\x00\x00\x00\x00\x00" 
             "\x00\x00\x00\x00\x00\x00\x00"s;
-        cout << "Challenge 10: " << challenge_10_wrapper("txt/challenge_10_b64_dec.txt"
-                , "YELLOW SUBMARINE", challenge_10_iv) << endl;
+        /* cout << "Challenge 10: " << challenge_10_wrapper("txt/challenge_10.txt"
+               , "YELLOW SUBMARINE", challenge_10_iv) << endl; */
+        if (test_cbc("YELLOW SUBMARINE")) {
+            cout << endl << "CBC test successful";
+        } else {
+            cout << endl << "CBC test unsuccessful";
+        }
 
-        /*auto encryption_test = aes_128_cbc_encrypt(
-         * pkcs_7_padding("YELLOW SUBMARINE", 16), "YELLOW SUBMARINE", challenge_10_iv);
-        cout << aes_128_cbc_decrypt(encryption_test, "YELLOW SUBMARINE", challenge_10_iv);
-        */
+        cout << endl;
 
         // END TEST CASES
     }
