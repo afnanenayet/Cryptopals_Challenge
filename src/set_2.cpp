@@ -194,7 +194,6 @@ namespace set_2 {
         cout << "\nDecoded string: \n" << b64_decoded << endl;
         cout << "\nRaw input length: " << input_parse.size() << "\n";
         cout << "\nDecode length: " << b64_decoded.size() << "\n";
-
         return aes_128_cbc_decrypt(b64_decoded, key, iv);
     }
 
@@ -216,7 +215,6 @@ namespace set_2 {
         }
 
         cout << endl;
-
         // END TEST CASES
     }
 }

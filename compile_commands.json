@@ -1,0 +1,17 @@
+[
+{
+  "directory": "/Users/aenayet/Documents/Programming/Cryptopals_Challenge",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -I/Users/aenayet/Documents/Programming/Cryptopals_Challenge/include  -g   -std=gnu++1z -o CMakeFiles/Cryptopals_Challenge.dir/src/set_1.cpp.o -c /Users/aenayet/Documents/Programming/Cryptopals_Challenge/src/set_1.cpp",
+  "file": "/Users/aenayet/Documents/Programming/Cryptopals_Challenge/src/set_1.cpp"
+},
+{
+  "directory": "/Users/aenayet/Documents/Programming/Cryptopals_Challenge",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -I/Users/aenayet/Documents/Programming/Cryptopals_Challenge/include  -g   -std=gnu++1z -o CMakeFiles/Cryptopals_Challenge.dir/src/set_2.cpp.o -c /Users/aenayet/Documents/Programming/Cryptopals_Challenge/src/set_2.cpp",
+  "file": "/Users/aenayet/Documents/Programming/Cryptopals_Challenge/src/set_2.cpp"
+},
+{
+  "directory": "/Users/aenayet/Documents/Programming/Cryptopals_Challenge",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -I/Users/aenayet/Documents/Programming/Cryptopals_Challenge/include  -g   -std=gnu++1z -o CMakeFiles/Cryptopals_Challenge.dir/src/test_cases.cpp.o -c /Users/aenayet/Documents/Programming/Cryptopals_Challenge/src/test_cases.cpp",
+  "file": "/Users/aenayet/Documents/Programming/Cryptopals_Challenge/src/test_cases.cpp"
+}
+]

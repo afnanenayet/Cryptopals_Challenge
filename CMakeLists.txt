@@ -3,10 +3,11 @@ cmake_minimum_required(VERSION 3.7)
 # Project variables
 set(PROJECT_NAME Cryptopals_Challenge)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
+set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
 project(${PROJECT_NAME} C CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 include_directories(include)
 
