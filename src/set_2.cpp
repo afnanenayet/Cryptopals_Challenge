@@ -14,7 +14,7 @@ namespace set_2 {
         // The number of bytes we need to add to make the string a multiple 
         // of the desired block size
         auto rem_bytes = block_size - (input_string.length() % block_size); 
-        
+
         // Initializing a stream with the input string so we can easily append 
         // the hex chars for padding
         std::stringstream padded_string_stream(input_string, std::ios_base::app 
@@ -91,11 +91,11 @@ namespace set_2 {
         string decoded;
 
         StringSource ss(input, true,
-            new Base64Decoder(
-                 new StringSink(decoded)
-             ) // StringSink
-         ); // StringSource
-         
+                new Base64Decoder(
+                    new StringSink(decoded)
+                    ) // StringSink
+                ); // StringSource
+
         return decoded;
     }
 
@@ -106,8 +106,8 @@ namespace set_2 {
         StringSource ss(input, true,
                 new Base64Encoder(
                     new StringSink(encoded)
-                ) // StringSink
-            ); // StringSource
+                    ) // StringSink
+                ); // StringSource
 
         return encoded;
     }
@@ -157,7 +157,7 @@ namespace set_2 {
 
                 // TODO DEBUG REMOVE
                 cout << endl << "decrypted block: " << curr_decrypt_blk << endl;
-                
+
                 // XORing the string with xor block/IV for final output
                 decrypted_string += xor_block_add(curr_decrypt_blk, xor_block);
 
@@ -189,10 +189,10 @@ namespace set_2 {
     // TODO challenge 10
     string challenge_10_wrapper(const string &input_fp, const string &key, 
             const string &iv) {
-        string input_parse = set_1::parse_file_to_string(input_fp);
-        string b64_decoded = base64_decode(input_parse); 
+        string output_parse = set_1::parse_file_to_string(input_fp);
+        string b64_decoded = base64_decode(output_parse); 
         cout << "\nDecoded string: \n" << b64_decoded << endl;
-        cout << "\nRaw input length: " << input_parse.size() << "\n";
+        cout << "\nRaw input length: " << output_parse.size() << "\n";
         cout << "\nDecode length: " << b64_decoded.size() << "\n";
         return aes_128_cbc_decrypt(b64_decoded, key, iv);
     }
@@ -207,7 +207,7 @@ namespace set_2 {
         std::string challenge_10_iv = "\x00\x00\x00\x00\x00\x00\x00\x00\x00" 
             "\x00\x00\x00\x00\x00\x00\x00"s;
         /* cout << "Challenge 10: " << challenge_10_wrapper("txt/challenge_10.txt"
-               , "YELLOW SUBMARINE", challenge_10_iv) << endl; */
+           , "YELLOW SUBMARINE", challenge_10_iv) << endl; */
         if (test_cbc("YELLOW SUBMARINE")) {
             cout << endl << "CBC test successful";
         } else {

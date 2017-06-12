@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.8)
 # Project variables
 set(PROJECT_NAME Cryptopals_Challenge)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
-set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(${PROJECT_NAME} C CXX)
 
@@ -22,3 +22,4 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/contrib/cmake")
 find_package(CryptoPP REQUIRED)
 add_executable(Cryptopals_Challenge ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} cryptopp)
+
