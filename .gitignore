@@ -45,3 +45,5 @@ tags
 challenge_solutions/
 .idea/
 bin/
+compiler_commands.json
+
