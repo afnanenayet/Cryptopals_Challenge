@@ -68,8 +68,8 @@ namespace set_2 {
         // the XORing block for the next iteration
         for (auto i = 0; i < input.length(); i+= key.length()) {
             try {
-                string curr_in_blk = input.substr(i, key.length());
-                string curr_block;
+                string curr_in_blk = input.substr(i, key.length()); // current input block
+                string curr_block; // current decrypted block
                 StringSource ss(curr_in_blk, true, 
                         new StreamTransformationFilter(ecb_dec,
                             new StringSink(curr_block)
@@ -89,7 +89,6 @@ namespace set_2 {
                 std::cerr << e.what() << endl;
             }
         }
-
         return result;
     }
 
@@ -273,6 +272,16 @@ namespace set_2 {
         return aes_128_cbc_dec_cpp(b64_decoded, key, iv);
     }
 
+    /* Uses CryptoPP to generate a random AES key of 16 bytes (chars)
+     */
+    string gen_aes_key() {
+        const int KEY_SIZE = 16;
+        AutoSeededRandomPool rnd;
+        unsigned char key_c[KEY_SIZE]; // c-style string for key
+        rnd.GenerateBlock(key_c, KEY_SIZE);
+        return string(key_c); // TODO figure out how to cast to c++ str
+    }
+
     void test_cases() {
         cout << endl << "Set 2 test cases:" << endl << endl;
 
@@ -283,12 +292,13 @@ namespace set_2 {
         // Challenge 9
         cout << "\nChallenge 9:\n" << pkcs_7_padding("YELLOW SUBMARINE", 20) << endl;
 
-        // Challenge 10
+        // Challenge 10 - 
         std::string challenge_10_iv = "\x00\x00\x00\x00\x00\x00\x00\x00\x00" 
             "\x00\x00\x00\x00\x00\x00\x00"s;
         cout << "\nChallenge 10: \n" << challenge_10_wrapper("txt/challenge_10.txt"
                 , "YELLOW SUBMARINE", challenge_10_iv) << endl; 
 
+        // Challenge 11
         // END TEST CASES
     }
 }
