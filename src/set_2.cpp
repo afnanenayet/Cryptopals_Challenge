@@ -7,8 +7,9 @@ using namespace CryptoPP;
 using namespace std::literals::string_literals;
 
 namespace set_2 {
-    // Computes the number of bytes to add to the string, converts that 
-    // number to a string, then adds it repeatedly to the 
+    /* Computes the number of bytes to add to the string, converts that 
+     * number to a string, then adds it repeatedly to the 
+     */
     string pkcs_7_padding(const string &input_string,  const unsigned int 
             block_size) {
         // The number of bytes we need to add to make the string a multiple 
@@ -29,6 +30,9 @@ namespace set_2 {
         return padded_string_stream.str();
     }
 
+    /* Adds characters by XOR'ing each character in two equal length strings. 
+     * Will throw an exception if the strings are not of the same length
+     */
     string xor_block_add(const string &block_1, const string &block_2) {
         if (block_1.length() != block_2.length()) {
             throw std::invalid_argument("Strings must have same length");
@@ -37,6 +41,8 @@ namespace set_2 {
         string result;
         result.reserve(block_1.length());
 
+        // Loop through each character in the string and XOR the 
+        // characters to create a new string
         for (auto i = 0; i < block_1.length(); i++) {
             result.push_back((unsigned char) block_1.at(i) ^ 
                     (unsigned char) block_2.at(i));
@@ -57,6 +63,9 @@ namespace set_2 {
         string result;
         string xor_block = iv;
 
+        // Loop through characters in the input using a chunk of the key size, 
+        // then run an ECB decryption on that block and use the input block as 
+        // the XORing block for the next iteration
         for (auto i = 0; i < input.length(); i+= key.length()) {
             try {
                 string curr_in_blk = input.substr(i, key.length());
@@ -96,7 +105,7 @@ namespace set_2 {
         }
 
         string decrypted; // the decrypted string to be returned to the user
-        
+
         // Using CryptoPP to perform the decryption
         try {
             CBC_Mode<AES>::Decryption cbc_decrypt;
@@ -106,8 +115,8 @@ namespace set_2 {
             StringSource ss(input, true,
                     new StreamTransformationFilter(cbc_decrypt,
                         new StringSink(decrypted)
-                    ) // StreamTransformationFilter
-                ); // StringSource
+                        ) // StreamTransformationFilter
+                    ); // StringSource
         } catch (const CryptoPP::Exception &e) {
             // Display the error
             std::cerr << e.what() << endl;
@@ -158,21 +167,21 @@ namespace set_2 {
     }
 
     /* Uses CryptoPP module to decode base64 to regular text
-     */
+    */
     string base64_decode(const string &input) {
         string decoded;
 
         StringSource ss(input, true,
                 new Base64Decoder(
                     new StringSink(decoded)
-                ) // StringSink
-        ); // StringSource
+                    ) // StringSink
+                ); // StringSource
 
         return decoded;
     }
 
     /* Uses CryptoPP module to encode regular text to base64
-     */
+    */
     string base64_encode(const string &input) {
         string encoded;
 
@@ -243,8 +252,8 @@ namespace set_2 {
             StringSource ss(encrypted, true,
                     new StreamTransformationFilter(cbc_decrypt,
                         new StringSink(decrypted)
-                    ) // StreamTransformationFilter
-                ); // StringSource
+                        ) // StreamTransformationFilter
+                    ); // StringSource
         } catch (const CryptoPP::Exception &e) {
             // Display the error
             std::cerr << e.what() << endl;
@@ -278,7 +287,7 @@ namespace set_2 {
         std::string challenge_10_iv = "\x00\x00\x00\x00\x00\x00\x00\x00\x00" 
             "\x00\x00\x00\x00\x00\x00\x00"s;
         cout << "\nChallenge 10: \n" << challenge_10_wrapper("txt/challenge_10.txt"
-           , "YELLOW SUBMARINE", challenge_10_iv) << endl; 
+                , "YELLOW SUBMARINE", challenge_10_iv) << endl; 
 
         // END TEST CASES
     }
