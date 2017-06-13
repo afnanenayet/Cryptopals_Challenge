@@ -45,6 +45,80 @@ namespace set_2 {
         return result;
     }
 
+    /* Implementation of AES 128 CBC decryption using CryptoPP's ECB decryption 
+     * for each block
+     */
+    string aes_128_cbc_decrypt(const string &input, const string &key, 
+            const string &iv) {
+        auto key_ptr = (const unsigned char*) key.c_str();
+        ECB_Mode<AES>::Decryption ecb_dec;
+        ecb_dec.SetKey(key_ptr, key.size());
+
+        string result;
+        string xor_block = iv;
+
+        for (auto i = 0; i < input.length(); i+= key.length()) {
+            try {
+                string curr_in_blk = input.substr(i, key.length());
+                string curr_block;
+                StringSource ss(curr_in_blk, true, 
+                        new StreamTransformationFilter(ecb_dec,
+                            new StringSink(curr_block)
+                            ) // StreamTransformationFilter
+                        ); // StringSource
+
+                string curr_dec_blk = xor_block_add(xor_block, curr_in_blk);
+
+                // The block to chain with a xor op next iteration is the 
+                // current encrypted block that was just processed
+                xor_block = curr_in_blk; 
+
+                // Add the current block to the resultant decrypted string
+                result += curr_dec_blk;
+            }
+            catch (CryptoPP::Exception &e) {
+                std::cerr << e.what() << endl;
+            }
+        }
+
+        return result;
+    }
+
+    /* Uses the CryptoPP library to decrypt an input given a key and an 
+     * initialization vector using AES CBC decryption. Will display an exception 
+     * to stderr. Will return an empty string on error.
+     */
+    string aes_128_cbc_dec_cpp(const string &input, const string &key, 
+            const string &iv) {
+        // Check arguments
+        if (input.size() == 0 || key.size() == 0 || iv.size() == 0) {
+            throw std::invalid_argument("String(s) must not be empty");
+        }
+
+        string decrypted; // the decrypted string to be returned to the user
+        
+        // Using CryptoPP to perform the decryption
+        try {
+            CBC_Mode<AES>::Decryption cbc_decrypt;
+            cbc_decrypt.SetKeyWithIV((const unsigned char*) key.c_str(), 
+                    key.size(), (const unsigned char*) iv.c_str());
+
+            StringSource ss(input, true,
+                    new StreamTransformationFilter(cbc_decrypt,
+                        new StringSink(decrypted)
+                    ) // StreamTransformationFilter
+                ); // StringSource
+        } catch (const CryptoPP::Exception &e) {
+            // Display the error
+            std::cerr << e.what() << endl;
+        }
+        return decrypted;
+    }
+
+    /* Implementation of AES 128 CBC encryption using CryptoPP's 
+     * ECB decryption (already implemented ECB decryption in another 
+     * function)
+     */
     string aes_128_cbc_encrypt(const string &input, const string &key, 
             const string &iv) {
         // Initializing Crypto++ ECB implementation
@@ -76,30 +150,29 @@ namespace set_2 {
                 curr_xor_block = curr_encrypted_block;
                 encrypted_string += curr_encrypted_block;
             }
-
             catch (CryptoPP::Exception &e) {
                 std::cerr << e.what() << endl;
-                exit(1);
             }
         }
-
         return encrypted_string;
     }
 
-    // Uses CryptoPP module to decode base64 to regular text
+    /* Uses CryptoPP module to decode base64 to regular text
+     */
     string base64_decode(const string &input) {
         string decoded;
 
         StringSource ss(input, true,
                 new Base64Decoder(
                     new StringSink(decoded)
-                    ) // StringSink
-                ); // StringSource
+                ) // StringSink
+        ); // StringSource
 
         return decoded;
     }
 
-    // Uses CryptoPP module to encode regular text to base64
+    /* Uses CryptoPP module to encode regular text to base64
+     */
     string base64_encode(const string &input) {
         string encoded;
 
@@ -112,66 +185,18 @@ namespace set_2 {
         return encoded;
     }
 
-    // Prints the binary representation of each char in a string using 
-    // the stdlib's bitset class
+    /* Prints the binary representation of each char in a string using 
+     * the stdlib's bitset class
+     */
     void print_string_binary(const string &input) {
         cout << endl << "String representation in binary:" << endl;
 
         // Looping through each char and converting to a bitset
         for (auto word : input) {
-            cout << endl << std::bitset<8>(word) << " " << (unsigned int) word << endl;
+            cout << endl << std::bitset<8>(word) << " | " << (unsigned char) word << endl;
         }
 
         cout << endl << "End string" << endl;
-    }
-
-    // Uses CryptoPP ECB mode to decode blocks to implement AES ECB mode
-    string aes_128_cbc_decrypt(const string &input, const string &key, 
-            const string &iv) {
-        byte* ecb_key = (byte*) key.c_str();
-        ECB_Mode<AES>::Decryption ecb_decrypt;
-        ecb_decrypt.SetKey(ecb_key, key.size());
-        string decrypted_string;
-        string xor_block = iv;
-
-        // decrypt each block with ECB then XORs with the xor_block
-        // updates xor block to be the last encrypted block
-        for (auto i = 0; i < key.size() - 1 /* i < input.size()*/ ; i += key.size()) {
-            try {
-                string curr_decrypt_blk;
-                curr_decrypt_blk.reserve(key.size());
-
-                string curr_input_block = input.substr(i, key.size());
-                cout << "\nInput block length: " << curr_input_block.size() << endl;
-
-                // TODO REMOVE DEBUG
-                print_string_binary(curr_input_block);
-
-                // CryptoPP ECB decryption
-                StringSource ss(curr_input_block, true,
-                        new StreamTransformationFilter(ecb_decrypt,
-                            new StringSink(curr_decrypt_blk),
-                            StreamTransformationFilter::PKCS_PADDING
-                            ) // StreamTransformationFilter
-                        ); // StringSource ss
-
-                // TODO DEBUG REMOVE
-                cout << endl << "decrypted block: " << curr_decrypt_blk << endl;
-
-                // XORing the string with xor block/IV for final output
-                decrypted_string += xor_block_add(curr_decrypt_blk, xor_block);
-
-                // xor block is the encrypted block that we just decrypted
-                xor_block = curr_input_block;
-            }
-
-            catch (CryptoPP::Exception &e) {
-                std::cerr << e.what() << endl;
-                exit(1);
-            }
-        }
-
-        return decrypted_string;
     }
 
     // Tests to ensure that CBC encryption and decryption are consistent
@@ -184,17 +209,59 @@ namespace set_2 {
         return decrypted == input;
     }
 
-    // Challenge wrappers: functions that wrap the challenges to provide the 
-    // correct output (if necessary)
-    // TODO challenge 10
+    /* A test implementation of CryptoPP's own CBC encryption and decryption. 
+     * Merely tests that the module is working and that the manner in which the 
+     * code is implemented is correct
+     */
+    bool test_cryptopp_cbc(const string &key, const string &input) {
+        string iv = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"s;
+        string encrypted;
+        string decrypted;
+
+        // Encrypt the string
+        try {
+            CBC_Mode<AES>::Encryption cbc_encrypt;
+            cbc_encrypt.SetKeyWithIV((const unsigned char*) key.c_str(), 
+                    key.size(), (const unsigned char*) iv.c_str());
+
+            StringSource ss(input, true, 
+                    new StreamTransformationFilter(cbc_encrypt,
+                        new StringSink(encrypted)
+                        ) // StreamTransformationFilter
+                    ); // StringSource
+        } catch (const CryptoPP::Exception &e) {
+            // Display the error
+            std::cerr << e.what() << endl;
+        }
+
+        // Decrypt the encrypted string
+        try {
+            CBC_Mode<AES>::Decryption cbc_decrypt;
+            cbc_decrypt.SetKeyWithIV((const unsigned char*) key.c_str(), 
+                    key.size(), (const unsigned char*) iv.c_str());
+
+            StringSource ss(encrypted, true,
+                    new StreamTransformationFilter(cbc_decrypt,
+                        new StringSink(decrypted)
+                    ) // StreamTransformationFilter
+                ); // StringSource
+        } catch (const CryptoPP::Exception &e) {
+            // Display the error
+            std::cerr << e.what() << endl;
+        }
+
+        // Return whether operation was successful
+        return decrypted == input;
+    }
+
+    /* Challenge wrappers: functions that wrap the challenges to provide the 
+     * correct output (if necessary)
+     */
     string challenge_10_wrapper(const string &input_fp, const string &key, 
             const string &iv) {
         string output_parse = set_1::parse_file_to_string(input_fp);
         string b64_decoded = base64_decode(output_parse); 
-        cout << "\nDecoded string: \n" << b64_decoded << endl;
-        cout << "\nRaw input length: " << output_parse.size() << "\n";
-        cout << "\nDecode length: " << b64_decoded.size() << "\n";
-        return aes_128_cbc_decrypt(b64_decoded, key, iv);
+        return aes_128_cbc_dec_cpp(b64_decoded, key, iv);
     }
 
     void test_cases() {
@@ -202,19 +269,17 @@ namespace set_2 {
 
         // BEGIN TEST CASES
 
-        cout << "Challenge 9: " << pkcs_7_padding("YELLOW SUBMARINE", 20) << endl;
+        /****** Challenge test cases ******/
 
+        // Challenge 9
+        cout << "\nChallenge 9:\n" << pkcs_7_padding("YELLOW SUBMARINE", 20) << endl;
+
+        // Challenge 10
         std::string challenge_10_iv = "\x00\x00\x00\x00\x00\x00\x00\x00\x00" 
             "\x00\x00\x00\x00\x00\x00\x00"s;
-        /* cout << "Challenge 10: " << challenge_10_wrapper("txt/challenge_10.txt"
-           , "YELLOW SUBMARINE", challenge_10_iv) << endl; */
-        if (test_cbc("YELLOW SUBMARINE")) {
-            cout << endl << "CBC test successful";
-        } else {
-            cout << endl << "CBC test unsuccessful";
-        }
+        cout << "\nChallenge 10: \n" << challenge_10_wrapper("txt/challenge_10.txt"
+           , "YELLOW SUBMARINE", challenge_10_iv) << endl; 
 
-        cout << endl;
         // END TEST CASES
     }
 }
