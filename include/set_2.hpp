@@ -126,6 +126,10 @@ namespace set_2 {
     std::string challenge_10_wrapper(const std::string &, const std::string &, 
             const std::string &);
 
+    /* Challenge 11
+     * @returns (bool) whether challenge was successfully executed
+     */
+    bool challenge_11_wrapper();
 }
 
 #endif /* _SET_2_HPP */

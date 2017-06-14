@@ -262,6 +262,14 @@ namespace set_2 {
         return decrypted == input;
     }
 
+    /* Detects if an encrypted string was encrypted in CBC or ECB mode and 
+     * returns whether it was
+     */
+    bool is_ecb_encrypted(const std::string &input) {
+        // TODO
+        return false;
+    }
+
     /* Challenge wrappers: functions that wrap the challenges to provide the 
      * correct output (if necessary)
      */
@@ -272,6 +280,16 @@ namespace set_2 {
         return aes_128_cbc_dec_cpp(b64_decoded, key, iv);
     }
 
+    /* Wrapper for Challenge 11: randomly encrypt some input with ECB or CBC 
+     * with a randomly generated key (and some random padding on both sides)
+     * then detect whether that input was encrypted using CBC or ECB
+     */
+    bool challenge_11_wrapper() {
+        // TODO
+        return true;
+    }
+
+
     /* Uses CryptoPP to generate a random AES key of 16 bytes (chars)
      */
     string gen_aes_key() {
@@ -279,7 +297,7 @@ namespace set_2 {
         AutoSeededRandomPool rnd;
         unsigned char key_c[KEY_SIZE]; // c-style string for key
         rnd.GenerateBlock(key_c, KEY_SIZE);
-        return string(key_c); // TODO figure out how to cast to c++ str
+        return string(key_c, key_c + KEY_SIZE);
     }
 
     void test_cases() {
@@ -299,6 +317,12 @@ namespace set_2 {
                 , "YELLOW SUBMARINE", challenge_10_iv) << endl; 
 
         // Challenge 11
+        if (challenge_10_wrapper()) {
+            cout << "Challenge 11: successful\n";
+        } else {
+            cout << "Challenge 11: failed\n";
+        }
+
         // END TEST CASES
     }
 }
