@@ -56,7 +56,7 @@ namespace set_2 {
      *
      * @param (string) a string
      */
-    void print_string_binary(const string &input);
+    void print_string_binary(const std::string &input);
 
     /* Decrypt a string using the CryptoPP library's CBC decryption
      *
@@ -64,8 +64,8 @@ namespace set_2 {
      * @param (string) key: the key
      * @param (string) iv: the initialization vector
      */
-    string aes_128_cbc_dec_cpp(const string &input, const string &key, 
-            const string &iv);
+    string aes_128_cbc_dec_cpp(const std::string &input, const std::string &key, 
+            const std::string &iv);
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~ Challenge wrapper functions ~~~~~~~~~~~~~~~~~
     // Functions that are wrappers for the Cryptopals challenges
